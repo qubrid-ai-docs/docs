@@ -23,128 +23,97 @@ You can choose the one that best fits your workflow.
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
-from pprint import pprint
-url = "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat"
-headers = {
-"Authorization": "Bearer Qubrid_API_KEY",
-"Content-Type": "application/json"
-}
-data = {
-"model": "Qwen/Qwen3-VL-30B-A3B-Instruct",
-"messages": [
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "text",
-        "text": "What is in this image? Describe the main elements."
-      },
-      {
-        "type": "image_url",
-        "image_url": {
-          "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
-        }
-      }
-    ]
-  }
-],
-"max_tokens": 4096,
-"temperature": 0.7,
-"stream": False,
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data,
-    stream=True  
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
 )
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3-VL-30B-A3B-Instruct",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=4096,
+    temperature=0.7,
+    top_p=0.9,
+    stream=True,
+    presence_penalty=0
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
 ```
 
 ```js JavaScript theme={null}
-(async () => {
-  const body = {
-    model: "Qwen/Qwen3-VL-30B-A3B-Instruct",
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: "What is in this image? Describe the main elements.",
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
-            },
-          },
-        ],
-      },
-    ],
-    max_tokens: 4096,
-    temperature: 0.7,
-    stream: true,
-  };
+import OpenAI from 'openai';
 
-  const res = await fetch(
-    "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat",
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3-VL-30B-A3B-Instruct',
+  messages: [
     {
-      method: "POST",
-      headers: {
-        Authorization:
-        "Bearer Qubrid_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
-
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const result = await res.json();
-    console.log(result);
-  } else {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.replace("data:", "").trim();
-        if (payload === "[DONE]") return;
-        try {
-          const chunk = JSON.parse(payload);
-          console.log(chunk);
-        } catch {
-          console.log("Raw chunk:", payload);
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
         }
-      }
+      ]
     }
+  ],
+  max_tokens: 4096,
+  temperature: 0.7,
+  top_p: 0.9,
+  stream: true,
+  presence_penalty: 0
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
   }
-})();
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
 ```
 
 ```go Go theme={null}
@@ -156,90 +125,59 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func main() {
-	url := "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat"
+	url := "https://platform.qubrid.com/v1/chat/completions"
 
 	data := map[string]interface{}{
 		"model": "Qwen/Qwen3-VL-30B-A3B-Instruct",
-		"messages": []interface{}{
-			map[string]interface{}{
+		"messages": []map[string]interface{}{
+			{
 				"role": "user",
-				"content": []interface{}{
-					map[string]interface{}{
+				"content": []map[string]interface{}{
+					{
 						"type": "text",
 						"text": "What is in this image? Describe the main elements.",
 					},
-					map[string]interface{}{
+					{
 						"type": "image_url",
-						"image_url": map[string]interface{}{
+						"image_url": map[string]string{
 							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
 						},
 					},
 				},
 			},
 		},
-		"max_tokens":  4096,
-		"temperature": 0.7,
-		"stream": true, 
+		"max_tokens":       4096,
+		"temperature":      0.7,
+		"stream":           true,
+		"top_p":            0.9,
+		"presence_penalty": 0,
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer Qubrid_API_KEY")
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var result map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-			panic(err)
-		}
-		fmt.Printf("%+v\n", result)
-		return
-	}
+
 	scanner := bufio.NewScanner(res.Body)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !strings.HasPrefix(line, "data:") {
-			continue
+		if line != "" {
+			fmt.Println(line)
 		}
-		payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-		if payload == "[DONE]" {
-			break
-		}
-		var chunk map[string]interface{}
-		if err := json.Unmarshal([]byte(payload), &chunk); err != nil {
-			fmt.Println("Raw chunk:", payload)
-			continue
-		}
-		fmt.Printf("%+v\n", chunk)
-	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
 	}
 }
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
-  -H "Authorization: Bearer <QUBRID_API_KEY>" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
   "model": "Qwen/Qwen3-VL-30B-A3B-Instruct",
@@ -261,7 +199,10 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
     }
   ],
   "max_tokens": 4096,
-  "temperature": 0.7
+  "temperature": 0.7,
+  "stream": true,
+  "top_p": 0.9,
+  "presence_penalty": 0
 }'
 ```
 
@@ -270,7 +211,7 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
 ## Model Overview
 **Qwen3 VL 30B A3B Instruct** is a large-scale vision-language model designed to process and reason over both text and visual inputs. It combines strong text understanding with advanced visual perception, spatial reasoning, OCR, and video comprehension. The model supports long-context workloads and agent-style interactions, enabling it to operate GUIs, invoke tools, and complete multimodal tasks. It is provided in a Mixture-of-Experts (MoE) architecture and optimized for inference across edge-to-cloud environments. This Instruct variant is intended for instruction-following and multimodal interaction.
 
-## Model at a Glance
+### Model at a Glance
 
 | Feature            | Details                     |
 | ------------------ | --------------------------- |
@@ -282,7 +223,7 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
 | Max Tokens         | 32K tokens                  |
 | Image Input        | Supported                   |
 
-## When to use?
+### When to use?
 
 You should consider using **Qwen3 VL 30B A3B Instruct** if:
 
@@ -294,7 +235,7 @@ You should consider using **Qwen3 VL 30B A3B Instruct** if:
 
 `This model is suitable for inference scenarios where multimodal comprehension and extended context handling are required.`
 
-## Inference parameters
+### Inference parameters
 
 | Parameter Name     | Type    | Default | Description                                   |
 |--------------------|---------|---------|-----------------------------------------------|
@@ -305,7 +246,7 @@ You should consider using **Qwen3 VL 30B A3B Instruct** if:
 | Top K              | number  | 50      | Limits sampling to the top-k tokens.          |
 | Presence Penalty   | number  | 0       | Discourages repeated tokens in the output.    |
 
-## Key Features
+### Key Features
 
 - **Visual Agent Operations :**
 Can operate PC and mobile GUIs by recognizing interface elements, understanding their functions, invoking tools, and completing tasks.
@@ -322,7 +263,7 @@ Combines visual and textual reasoning for causal analysis, logical problem-solvi
 - **Expanded OCR and Visual Recognition :**
 Supports OCR across 32 languages and improves recognition under low light, blur, tilt, rare characters, and long-document structures.
 
-## Summary
+### Summary
 **Qwen3 VL 30B A3B Instruct** is a Mixture-of-Experts vision-language model designed for multimodal inference. 
 - It processes text, images, and long-context inputs in a unified manner. The model supports visual reasoning, OCR, video understanding, and tool usage.
 - It enables agent-style interactions such as GUI operation and task completion. Serverless inference is supported, while fine-tuning is not. 

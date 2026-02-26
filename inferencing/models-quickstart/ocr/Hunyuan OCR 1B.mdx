@@ -23,216 +23,153 @@ You can choose the one that best fits your workflow.
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
-from pprint import pprint
+from openai import OpenAI
 
-url = "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
-
-headers = {
-    "Authorization": "Bearer <Qubrid_API_KEY>",
-    "Content-Type": "application/json"
-}
-data = {
-    "model": "tencent/HunyuanOCR",
-    "messages": [
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
-                    }
-                }
-            ]
-        }
-    ],
-    "max_tokens": 4096,
-    "temperature": 0,
-    "language": "auto",
-    "ocr_mode": "general",
-    "stream": False  
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data,
-    stream=True  
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
 )
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="tencent/HunyuanOCR",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=4096,
+    temperature=0,
+    stream=True,
+    extra_body={
+        "language": "en",
+        "ocr_mode": "general",
+    }
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
 ```
 
 ```js JavaScript theme={null}
-(async () => {
-  const body = {
-    model: "tencent/HunyuanOCR",
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image_url",
-            image_url: {
-              url: "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
-            },
-          },
-        ],
-      },
-    ],
-    max_tokens: 4096,
-    temperature: 0,
-    language: "auto",
-    ocr_mode: "general",
-    stream: false,
-  };
-  const res = await fetch(
-    "https://platform.qubrid.com/api/v1/qubridai/chat/completions",
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'tencent/HunyuanOCR',
+  messages: [
     {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Bearer <QUBRID_API_KEY>",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const result = await res.json();
-    console.log(result);
-  }
-  else {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.replace("data:", "").trim();
-        if (payload === "[DONE]") return;
-        try {
-          const chunk = JSON.parse(payload);
-          console.log(chunk);
-        } catch {
-          console.log("Raw chunk:", payload);
+      "role": "user",
+      "content": [
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
         }
-      }
+      ]
     }
+  ],
+  max_tokens: 4096,
+  temperature: 0,
+  stream: true,
+  extra_body: {
+    language: 'en',
+    ocr_mode: 'general',
   }
-})();
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
 ```
 
 ```go Go theme={null}
 package main
+
 import (
 	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
+
 func main() {
-	url := "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
+	url := "https://platform.qubrid.com/v1/chat/completions"
 
 	data := map[string]interface{}{
 		"model": "tencent/HunyuanOCR",
-		"messages": []interface{}{
-			map[string]interface{}{
+		"messages": []map[string]interface{}{
+			{
 				"role": "user",
-				"content": []interface{}{
-					map[string]interface{}{
+				"content": []map[string]interface{}{
+					{
 						"type": "image_url",
-						"image_url": map[string]interface{}{
+						"image_url": map[string]string{
 							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
 						},
 					},
 				},
 			},
 		},
-		"max_tokens": 4096,
+		"max_tokens":  4096,
 		"temperature": 0,
-		"language": "auto",
-		"ocr_mode": "general",
-		"stream": false,
+		"stream":      true,
+		"language":    "en",
+		"ocr_mode":    "general",
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Authorization", "Bearer <QUBRID_API_KEY>")
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
 
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var result map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-			panic(err)
-		}
-		fmt.Printf("%+v\n", result)
-		return
-	}
 	scanner := bufio.NewScanner(res.Body)
-
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !strings.HasPrefix(line, "data:") {
-			continue
+		if line != "" {
+			fmt.Println(line)
 		}
-		payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-		if payload == "[DONE]" {
-			break
-		}
-		var chunk map[string]interface{}
-		if err := json.Unmarshal([]byte(payload), &chunk); err != nil {
-			fmt.Println("Raw chunk:", payload)
-			continue
-		}
-		fmt.Printf("%+v\n", chunk)
-	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
 	}
 }
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
-  -H "Authorization: Bearer <QUBRID_API_KEY>" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
   "model": "tencent/HunyuanOCR",
@@ -251,7 +188,8 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
   ],
   "max_tokens": 4096,
   "temperature": 0,
-  "language": "auto",
+  "stream": true,
+  "language": "en",
   "ocr_mode": "general"
 }'
 ```
@@ -262,176 +200,128 @@ Hunyuan ocr multiple image support :
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
+from openai import OpenAI
 import base64
-from pprint import pprint
 
 def image_to_data_url(path):
     with open(path, "rb") as f:
         b64 = base64.b64encode(f.read()).decode("utf-8")
     return f"data:image/png;base64,{b64}"
 
-url = "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
 
-headers = {
-    "Authorization": "Bearer <QUBRID_API_KEY>",
-    "Content-Type": "application/json"
-}
-data = {
-    "model": "tencent/HunyuanOCR",
-    "messages": [
+# Create a streaming chat completion with multiple images
+stream = client.chat.completions.create(
+    model="tencent/HunyuanOCR",
+    messages=[
         {
             "role": "user",
             "content": [
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": image_to_data_url("/path/to/image")
+                        "url": image_to_data_url("/path/to/image1")
                     }
                 },
-                    {
+                {
                     "type": "image_url",
                     "image_url": {
-                        "url": image_to_data_url("/path/to/image")
+                        "url": image_to_data_url("/path/to/image2")
                     }
                 }
             ]
         }
     ],
-
-    "max_tokens": 4096,
-    "temperature": 0,
-    "language": "auto",
-    "ocr_mode": "general",
-    "stream": False  
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data,
-    stream=False  
+    max_tokens=4096,
+    temperature=0,
+    stream=True,
+    extra_body={
+        "language": "auto",
+        "ocr_mode": "general",
+    }
 )
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
+
+# Process streaming response
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+
+print("\n")
 ```
 
 ```js JavaScript theme={null}
-const fs = require("fs");
+import OpenAI from 'openai';
+import fs from 'fs';
 
 function imageToDataURL(path) {
-  const buffer = fs.readFileSync(path);
-  const base64 = buffer.toString("base64");
-  return `data:image/png;base64,${base64}`;
+    const buffer = fs.readFileSync(path);
+    const base64 = buffer.toString('base64');
+    return `data:image/png;base64,${base64}`;
 }
 
-const url = "https://platform.qubrid.com/api/v1/qubridai/chat/completions";
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+    baseURL: 'https://platform.qubrid.com/v1',
+    apiKey: 'QUBRID_API_KEY',
+});
 
-const payload = {
-  model: "tencent/HunyuanOCR",
-  messages: [
-    {
-      role: "user",
-      content: [
+// Create a streaming chat completion with multiple images
+const stream = await client.chat.completions.create({
+    model: 'tencent/HunyuanOCR',
+    messages: [
         {
-          type: "image_url",
-          image_url: {
-            url: imageToDataURL(
-              "/path/to/image",
-            ),
-          },
-        },
-        {
-          type: "image_url",
-          image_url: {
-            url: imageToDataURL(
-              "/path/to/image",
-            ),
-          },
-        },
-      ],
-    },
-  ],
-  max_tokens: 4096,
-  temperature: 0,
-  language: "auto",
-  ocr_mode: "general",
-  stream: false,
-};
-
-(async () => {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization:
-      "Bearer <QUBRID_API_KEY>",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const data = await response.json();
-    console.log(data);
-    return;
-  }
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder("utf-8");
-
-  let finalText = "";
-
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    const lines = chunk.split("\n");
-
-    for (const line of lines) {
-      if (!line.startsWith("data:")) continue;
-
-      const payload = line.replace("data:", "").trim();
-      if (payload === "[DONE]") break;
-
-      try {
-        const parsed = JSON.parse(payload);
-        const delta = parsed?.choices?.[0]?.delta?.content;
-        if (delta) finalText += delta;
-      } catch {
-      }
+            role: 'user',
+            content: [
+                {
+                    type: 'image_url',
+                    image_url: {
+                        url: imageToDataURL('/path/to/image1')
+                    }
+                },
+                {
+                    type: 'image_url',
+                    image_url: {
+                        url: imageToDataURL('/path/to/image2')
+                    }
+                }
+            ]
+        }
+    ],
+    max_tokens: 4096,
+    temperature: 0,
+    stream: true,
+    extra_body: {
+        language: 'auto',
+        ocr_mode: 'general',
     }
-  }
-  console.log("\nFinal OCR Output:\n");
-  console.log(finalText);
-})();
+});
+
+// Process streaming response
+for await (const chunk of stream) {
+    if (chunk.choices[0]?.delta?.content) {
+        process.stdout.write(chunk.choices[0].delta.content);
+    }
+}
+console.log('\n');
 ```
 
 ```go Go theme={null}
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 )
+
 func imageToDataURL(path string) (string, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -442,17 +332,18 @@ func imageToDataURL(path string) (string, error) {
 }
 
 func main() {
-	url := "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
+	url := "https://platform.qubrid.com/v1/chat/completions"
 
-	img1, err := imageToDataURL("/path/to/image")
+	img1, err := imageToDataURL("/path/to/image1")
 	if err != nil {
 		panic(err)
 	}
 
-	img2, err := imageToDataURL("/path/to/image")
+	img2, err := imageToDataURL("/path/to/image2")
 	if err != nil {
 		panic(err)
 	}
+
 	data := map[string]interface{}{
 		"model": "tencent/HunyuanOCR",
 		"messages": []map[string]interface{}{
@@ -474,49 +365,35 @@ func main() {
 				},
 			},
 		},
-		"max_tokens": 4096,
+		"max_tokens":  4096,
 		"temperature": 0,
-		"language": "auto",
-		"ocr_mode": "general",
-		"stream": false,
+		"language":    "auto",
+		"ocr_mode":    "general",
+		"stream":      true,
 	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Authorization", "Bearer <QUBRID_API_KEY>")
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	contentType := resp.Header.Get("Content-Type")
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	if contentType == "application/json" || bytes.Contains([]byte(contentType), []byte("application/json")) {
-		var result map[string]interface{}
-		if err := json.Unmarshal(body, &result); err != nil {
-			panic(err)
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
 		}
-		pretty, _ := json.MarshalIndent(result, "", "  ")
-		fmt.Println(string(pretty))
-	} else {
-		fmt.Println(string(body))
 	}
 }
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
-  -H "Authorization: Bearer <QUBRID_API_KEY>" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
   "model": "tencent/HunyuanOCR",
@@ -541,9 +418,9 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
   ],
   "max_tokens": 4096,
   "temperature": 0,
+  "stream": true,
   "language": "auto",
-  "ocr_mode": "general",
-  "stream": "false"
+  "ocr_mode": "general"
 }'
 ```
 </CodeGroup>
@@ -558,17 +435,17 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
 - With a lightweight 1B parameter size, the model supports multilingual document parsing and multiple OCR-related tasks while remaining efficient for deployment on inferencing platforms.
 - The model is focused purely on OCR workflows and is not intended for general visual question answering.
 
-## Model at a Glance
+### Model at a Glance
 
 | Feature        | Details                           |
 | -------------- | --------------------------------- |
-| Model ID       | `tencent/HunyuanOCR`              |
+| Model ID       | `tencent/HunyuanOCR`             |
 | Provider       | Tencent                           |
 | Parameters     | 1B                                |
 | Context Length | 16k tokens                        |
 | Model Type     | OCR-focused Vision-Language Model |
 
-## When to use?
+### When to use?
 
 You should consider using **Hunyuan OCR (1B)** if:
 
@@ -580,7 +457,7 @@ You should consider using **Hunyuan OCR (1B)** if:
 
 `Do not use this model for general visual question answering tasks.`
 
-## Key Features
+### Key Features
 
 - **Efficient Lightweight Architecture :**
   Built on Hunyuan’s native multimodal architecture, achieving strong OCR performance with only 1B parameters and reduced deployment cost.
@@ -594,7 +471,7 @@ You should consider using **Hunyuan OCR (1B)** if:
 - **Multilingual Document Support :**
   Provides robust support for over 100 languages, including mixed-language documents and varied document types.
 
-## Inference Parameters
+### Inference Parameters
 | Parameter Name       | Type    | Default | Description                                                                 |
 |----------------------|---------|---------|-----------------------------------------------------------------------------|
 | Streaming            | boolean | true    | Enable streaming responses for real-time output.                            |
@@ -604,9 +481,9 @@ You should consider using **Hunyuan OCR (1B)** if:
 | Temperature          | number  | 0       | Controls randomness. Keep at 0 for accurate text extraction.                |
 
 
-## Performance Characteristics
+### Performance Characteristics
 
-## Strengths
+#### Strengths
 
 - Lightweight 1B parameter model with strong OCR accuracy
 - Native handling of high-resolution images and extreme aspect ratios
@@ -614,13 +491,13 @@ You should consider using **Hunyuan OCR (1B)** if:
 - Effective recognition of rotated and vertical text
 - Strong multilingual and mixed-script support
 
-## Considerations
+#### Considerations
 
 - Designed specifically for OCR, not general visual reasoning
 - May hallucinate on extremely blurred or low-resolution text
 - Throughput depends on visual token density
 
-## Summary
+### Summary
 
 **Hunyuan OCR (1B)** is a lightweight, OCR-focused vision-language model developed by Tencent Hunyuan.
 - It performs end-to-end OCR tasks using a single instruction and single inference step.

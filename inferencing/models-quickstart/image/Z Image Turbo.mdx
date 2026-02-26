@@ -24,163 +24,136 @@ You can choose the one that best fits your workflow.
 <CodeGroup>
   ```py Python theme={null}
 import requests
+import json
 
-url = "https://platform.qubrid.com/api/v1/qubridai/image/generation"
-
-headers = {"Authorization": "Bearer <QUBRID_API_KEY>", "Content-Type": "application/json"}
-
-data = {
-    "model": "Tongyi-MAI/Z-Image-Turbo",
-    "positive_prompt": (
-        "A retro 1980s synthwave album cover. A grid landscape leading to a setting purple sun "
-        "in the distance. A chrome sports car driving away. The text 'Qubrid is Qool' is written "
-        "in a metallic chrome script font with neon pink outlines floating in the sky. "
-        "CRT monitor effect, grain, vibrant neon colors."
-    ),
-    "width": 1024,
-    "height": 1024,
-    "steps": 9,
-    "cfg": 0,
-    "seed": 42,
+url = "https://platform.qubrid.com/v1/images/generations"
+headers = {
+    "Authorization": "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
 }
 
+# Prepare generation parameters
+data = {
+  "model": "Tongyi-MAI/Z-Image-Turbo",
+  "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "width": 1024,
+  "height": 1024,
+  "steps": 9,
+  "cfg": 1,
+  "seed": 42,
+  "negative_prompt": "",
+  "response_format": "url"
+}
+
+# Send request
 response = requests.post(url, headers=headers, json=data)
 
+# Save the generated image
 if response.status_code == 200:
     with open("generated_image.png", "wb") as f:
         f.write(response.content)
-    print("Image saved to generated_image.png")
+        print("Image saved to generated_image.png")
 else:
-    print(f"Error {response.status_code}: {response.text}")
+    print(f"Error: {response.status_code}")
+    print(response.text)
 ```
 
 ```js JavaScript theme={null}
-import fs from "fs";
-
 const body = {
-  model: "Tongyi-MAI/Z-Image-Turbo",
-  positive_prompt:
-    "A retro 1980s synthwave album cover. A grid landscape leading to a setting purple sun in the distance. A chrome sports car driving away. The text 'Qubrid is Qool' is written in a metallic chrome script font with neon pink outlines floating in the sky. CRT monitor effect, grain, vibrant neon colors.",
-  width: 1024,
-  height: 1024,
-  steps: 9,
-  cfg: 0,
-  seed: 42
+  "model": "Tongyi-MAI/Z-Image-Turbo",
+  "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "width": 1024,
+  "height": 1024,
+  "steps": 9,
+  "cfg": 1,
+  "seed": 42,
+  "negative_prompt": "",
+  "response_format": "url"
 };
 
-const res = await fetch(
-  "https://platform.qubrid.com/api/v1/qubridai/image/generation",
-  {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer <QUBRID_API_KEY>",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  }
-);
-if (!res.ok) {
-  const errText = await res.text();
-  throw new Error(`API Error ${res.status}: ${errText}`);
-}
-const buffer = Buffer.from(await res.arrayBuffer());
-fs.writeFileSync("generated_image.png", buffer);
-console.log("Image saved to generated_image.png");
+const res = await fetch("https://platform.qubrid.com/v1/images/generations", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(body)
+});
+
+const result = await res.json();
 ```
 
 ```go Go theme={null}
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"os"
 )
 
 func main() {
-	url := "https://platform.qubrid.com/api/v1/qubridai/image/generation"
+	url := "https://platform.qubrid.com/v1/images/generations"
 
 	data := map[string]interface{}{
-		"model": "Tongyi-MAI/Z-Image-Turbo",
-		"positive_prompt": "A retro 1980s synthwave album cover. A grid landscape leading to a setting purple sun in the distance. A chrome sports car driving away. The text 'Qubrid is Qool' is written in a metallic chrome script font with neon pink outlines floating in the sky. CRT monitor effect, grain, vibrant neon colors.",
-		"width":  1024,
-		"height": 1024,
-		"steps":  9,
-		"cfg":    0,
-		"seed":   42,
+		"model":           "Tongyi-MAI/Z-Image-Turbo",
+		"positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+		"width":           1024,
+		"height":          1024,
+		"steps":           9,
+		"cfg":             1,
+		"seed":            42,
+		"negative_prompt": "",
+		"response_format": "url",
 	}
 
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Set(
-		"Authorization",
-		"Bearer Qubrid_API_KEY",
-	)
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
-		log.Fatalf("API error %d: %s", res.StatusCode, body)
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
 	}
-
-	file, err := os.Create("generated_image.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Image saved to generated_image.png")
 }
 ```
 
 ```curl cURL theme={null}
-  curl -X POST "https://platform.qubrid.com/api/v1/qubridai/image/generation" \
-    -H "Authorization: Bearer <Qubrid_API_KEY>" \
-    -H "Content-Type: application/json" \
-    --data '{
-    "model": "Tongyi-MAI/Z-Image-Turbo",
-    "positive_prompt": "A retro 1980s synthwave album cover. A grid landscape leading to a setting purple sun in the distance. A chrome sports car driving away. The text '\''Qubrid is Qool'\'' is written in a metallic chrome script font with neon pink outlines floating in the sky. CRT monitor effect, grain, vibrant neon colors.",
-    "width": 1024,
-    "height": 1024,
-    "steps": 9,
-    "cfg": 0,
-    "seed": 42
-  }'
+curl -X POST "https://platform.qubrid.com/v1/images/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Tongyi-MAI/Z-Image-Turbo",
+  "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "width": 1024,
+  "height": 1024,
+  "steps": 9,
+  "cfg": 1,
+  "seed": 42,
+  "negative_prompt": "",
+  "response_format": "url"
+}'
 ```
 
 </CodeGroup>
 
-## API Generated Response
+### API Generated Response
 
 <Frame>
   <img src="/images/z-image-turbo-demo.png" />
 </Frame>
 
-## Example Generated Image
+### Example Generated Image
 
 > Prompt: A professional product photography shot of a matte black coffee bag sitting on a wooden table. The bag clearly features the text 'QUBRID ROAST' in gold foil stamping. Beside the bag is a white ceramic cup with latte art. Morning sunlight, sharp focus, 8k resolution, commercial advertisement style.
 
@@ -219,7 +192,7 @@ You should use **Z Image Turbo** if you need:
 
 Z Image Turbo is suitable for production inference scenarios where efficiency, consistency, and predictable output behavior are required.
 
-## Inference Parameters
+### Inference Parameters
 | Parameter Name     | Type   | Default | Description                                                     |
 |--------------------|--------|---------|-----------------------------------------------------------------|
 | Width              | number | 1024    | Generated image width.                                          |
@@ -230,7 +203,7 @@ Z Image Turbo is suitable for production inference scenarios where efficiency, c
 | Negative Prompt    | string | —       | Optional negative prompt.                                       |
 
 
-## Key Features
+### Key Features
 
 - **High-speed image generation** using a distilled 6B-parameter model optimized for low latency
 - **Photorealistic and stylized outputs** with strong prompt adherence
@@ -239,7 +212,7 @@ Z Image Turbo is suitable for production inference scenarios where efficiency, c
 - **Deterministic outputs** with seed control and fixed single-image generation
 - **Production-ready inference** with predictable cost and performance
 
-## Summary
+### Summary
 
 **Z Image Turbo** is a fast, efficient image generation model built for production use. It is distilled from a larger foundation model to reduce inference cost while maintaining visual quality. The model excels at photorealistic images, stylized artwork, and text rendering. It supports flexible resolutions and deterministic outputs via seed control. Z Image Turbo is ideal for real-time and large-scale image generation workloads.
 

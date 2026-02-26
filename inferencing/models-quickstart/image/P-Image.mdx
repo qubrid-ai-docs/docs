@@ -1,0 +1,201 @@
+---
+title: "P-Image"
+description: "> A fast, affordable text-to-image model delivering high-quality image generation in under one second."
+---
+ 
+## About the Provider
+Pruna AI is an AI optimization company focused on making state-of-the-art image generation fast, affordable, and accessible. Their P-Image model family is designed to deliver professional-quality image generation with sub-second inference speeds, strong prompt adherence, and support for fine-tuning and LoRA-based customization.
+ 
+## Model Quickstart
+ 
+This section helps you quickly get started with the `p-image` model on the Qubrid AI inferencing platform.
+ 
+To use this model, you need:
+ 
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+ 
+Once authenticated with your API key, you can send inference requests to the `p-image` model and receive responses based on your input prompts.
+ 
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+ 
+<CodeGroup>
+```py Python theme={null}
+import requests
+import json
+ 
+url = "https://platform.qubrid.com/v1/images/generations"
+headers = {
+    "Authorization": "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+}
+ 
+data = {
+  "model": "p-image",
+  "prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "aspect_ratio": "16:9",
+  "width": 1440,
+  "height": 1440,
+  "seed": 0,
+  "disable_safety_checker": False,
+  "response_format": "url"
+}
+ 
+response = requests.post(url, headers=headers, json=data)
+ 
+if response.status_code == 200:
+    with open("generated_image.png", "wb") as f:
+        f.write(response.content)
+        print("Image saved to generated_image.png")
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+```
+
+```js JavaScript theme={null}
+const body = {
+  "model": "p-image",
+  "prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "aspect_ratio": "16:9",
+  "width": 1440,
+  "height": 1440,
+  "seed": 0,
+  "disable_safety_checker": false,
+  "response_format": "url"
+};
+ 
+const res = await fetch("https://platform.qubrid.com/v1/images/generations", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(body)
+});
+ 
+const result = await res.json();
+```
+
+```go Go theme={null}
+package main
+ 
+import (
+    "bufio"
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
+ 
+func main() {
+    url := "https://platform.qubrid.com/v1/images/generations"
+ 
+    data := map[string]interface{}{
+        "model":                  "p-image",
+        "prompt":                 "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+        "aspect_ratio":           "16:9",
+        "width":                  1440,
+        "height":                 1440,
+        "seed":                   0,
+        "disable_safety_checker": false,
+        "response_format":        "url",
+    }
+ 
+    jsonData, _ := json.Marshal(data)
+    req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+    req.Header.Set("Content-Type", "application/json")
+ 
+    client := &http.Client{}
+    res, _ := client.Do(req)
+    defer res.Body.Close()
+ 
+    scanner := bufio.NewScanner(res.Body)
+    for scanner.Scan() {
+        line := scanner.Text()
+        if line != "" {
+            fmt.Println(line)
+        }
+    }
+}
+```
+
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/images/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "p-image",
+  "prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "aspect_ratio": "16:9",
+  "width": 1440,
+  "height": 1440,
+  "seed": 0,
+  "disable_safety_checker": false,
+  "response_format": "url"
+}'
+```
+</CodeGroup>
+ 
+ 
+## Model Overview
+ 
+**P-Image** is a text-to-image generation model developed by Pruna AI, designed for high-quality image synthesis at sub-second inference speeds.  
+- It is optimized for cost efficiency and speed without sacrificing visual quality or prompt adherence.  
+- The model supports fine-tuning and LoRA-based customization, enabling domain-specific style adaptation.  
+- P-Image is suitable for production workflows requiring fast, scalable, and high-fidelity image generation.
+ 
+---
+ 
+## Model at a Glance
+ 
+| Feature            | Details                                                        |
+|--------------------|----------------------------------------------------------------|
+| Model ID           | p-image                                                        |
+| Provider           | Pruna AI                                                       |
+| Model Type         | Text-to-Image Generation                                       |
+| Architecture       | Optimized latent diffusion model with sub-second inference     |
+| Default Resolution | 1440 × 1440                                                    |
+| Output Type        | Images generated from text prompts                             |
+ 
+## When to use?
+ 
+You should consider using **P-Image** if:
+ 
+- You need high-quality text-to-image generation at sub-second speeds
+- Your application requires cost-efficient, scalable image generation
+- You want strong prompt adherence with support for diverse visual styles
+- You need fine-tuning or LoRA-based customization for domain-specific outputs
+ 
+---
+ 
+## Inference Parameters
+ 
+| Parameter Name         | Type    | Default | Description                                      |
+|------------------------|---------|---------|--------------------------------------------------|
+| Aspect Ratio           | string  | 16:9    | Output image aspect ratio.                       |
+| Width                  | number  | 1440    | Image width in pixels.                           |
+| Height                 | number  | 1440    | Image height in pixels.                          |
+| Seed                   | number  | 0       | Random seed for reproducibility.                 |
+| Disable Safety Checker | boolean | false   | Disables the built-in safety filter if enabled.  |
+| Response Format        | string  | url     | Format of the response — `url` or `b64_json`.    |
+ 
+## Key Features
+ 
+- **Sub-Second Inference**: Generates high-quality images in under one second, optimized for production speed and cost efficiency.
+- **Strong Prompt Adherence**: Delivers accurate visual outputs across a wide range of text prompts and styles.
+- **Fine-Tuning Support**: Supports model fine-tuning and LoRA-based style customization for domain-specific use cases.
+- **Flexible Resolution Control**: Configurable width, height, and aspect ratio for diverse output requirements.
+- **Safety Controls**: Built-in safety checker with optional override for appropriate use cases.
+ 
+---
+ 
+## Summary
+ 
+**P-Image** is a fast, affordable, and high-quality text-to-image model built by Pruna AI for production-scale image generation.  
+- It delivers sub-second inference speeds while maintaining strong visual quality and prompt adherence.  
+- The model supports fine-tuning and LoRA customization for style-specific applications.  
+- It is suitable for developers and enterprises requiring scalable, cost-efficient image generation workflows.
+ 

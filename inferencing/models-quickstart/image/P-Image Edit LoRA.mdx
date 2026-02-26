@@ -1,0 +1,311 @@
+---
+title: "P-Image Edit LoRA"
+description: "> A fast, affordable image editing model with LoRA support for fine-tuned, text-guided modifications to existing images with precise style control."
+---
+
+## About the Provider
+Pruna AI is an AI optimization company focused on making state-of-the-art image generation fast, affordable, and accessible. Their P-Image model family is designed to deliver professional-quality image generation and editing with sub-second inference speeds, strong prompt adherence, and support for fine-tuning and LoRA-based customization.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `p-image-edit-lora` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `p-image-edit-lora` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+import requests
+import json
+
+url = "https://platform.qubrid.com/v1/images/edits"
+headers = {
+    "Authorization": "Bearer QUBRID_API_KEY"
+}
+
+# ─────────────────────────────────────────
+# Option 1: File Upload (Multipart)
+# ─────────────────────────────────────────
+files = [
+    ('files', ('input.png', open('<YOUR-IMAGE-COMPLETE-PATH>', 'rb'), 'image/png'))
+]
+data = {
+  "model": "p-image-edit-lora",
+  "prompt": "Add a rainbow over the mountains",
+  "lora_weights": None,
+  "lora_scale": 1,
+  "hf_api_token": None,
+  "turbo": True,
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": False,
+  "response_format": "url"
+}
+
+response = requests.post(url, headers=headers, data=data, files=files)
+print(response.json())
+
+# ─────────────────────────────────────────
+# Option 2: JSON with Image URLs
+# ─────────────────────────────────────────
+headers_json = {
+    "Authorization": "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+  "model": "p-image-edit-lora",
+  "prompt": "Add a rainbow over the mountains",
+  "lora_weights": None,
+  "lora_scale": 1,
+  "hf_api_token": None,
+  "turbo": True,
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": False,
+  "response_format": "url"
+}
+payload["images"] = ["<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"]
+
+response = requests.post(url, headers=headers_json, json=payload)
+print(response.json())
+```
+
+```js JavaScript theme={null}
+// ─────────────────────────────────────────
+// Option 1: File Upload (Multipart)
+// ─────────────────────────────────────────
+const form = new FormData();
+form.append("model", "p-image-edit-lora");
+form.append("prompt", "Add a rainbow over the mountains");
+form.append("lora_weights", "null");
+form.append("lora_scale", "1");
+form.append("hf_api_token", "null");
+form.append("turbo", "true");
+form.append("aspect_ratio", "16:9");
+form.append("seed", "1");
+form.append("disable_safety_checker", "false");
+form.append("response_format", "url");
+form.append("files", fs.createReadStream("input.png"));
+
+const res1 = await fetch("https://platform.qubrid.com/v1/images/edits", {
+  method: "POST",
+  headers: { Authorization: "Bearer QUBRID_API_KEY" },
+  body: form
+});
+const result1 = await res1.json();
+console.log(result1);
+
+// ─────────────────────────────────────────
+// Option 2: JSON with Image URLs
+// ─────────────────────────────────────────
+const body = {
+  ...{
+  "model": "p-image-edit-lora",
+  "prompt": "Add a rainbow over the mountains",
+  "lora_weights": null,
+  "lora_scale": 1,
+  "hf_api_token": null,
+  "turbo": true,
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": false,
+  "response_format": "url"
+},
+  images: ["<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"]
+};
+
+const res2 = await fetch("https://platform.qubrid.com/v1/images/edits", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(body)
+});
+const result2 = await res2.json();
+console.log(result2);
+```
+
+```go Go theme={null}
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/images/edits"
+
+	// ─────────────────────────────────────────
+	// Option 1: File Upload (Multipart)
+	// ─────────────────────────────────────────
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	writer.WriteField("model", "p-image-edit-lora")
+	writer.WriteField("prompt", "Add a rainbow over the mountains")
+	writer.WriteField("lora_weights", "null")
+	writer.WriteField("lora_scale", "1")
+	writer.WriteField("hf_api_token", "null")
+	writer.WriteField("turbo", "true")
+	writer.WriteField("aspect_ratio", "16:9")
+	writer.WriteField("seed", "1")
+	writer.WriteField("disable_safety_checker", "false")
+	writer.WriteField("response_format", "url")
+
+	file, _ := os.Open("<YOUR-IMAGE-COMPLETE-PATH>")
+	defer file.Close()
+	part, _ := writer.CreateFormFile("files", "input.png")
+	io.Copy(part, file)
+
+	writer.Close()
+
+	req, _ := http.NewRequest("POST", url, body)
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+	fmt.Println(res.Status)
+
+	// ─────────────────────────────────────────
+	// Option 2: JSON with Image URLs
+	// ─────────────────────────────────────────
+	type ImageEditRequest struct {
+		Model  string   `json:"model"`
+		Prompt string   `json:"prompt"`
+		Images []string `json:"images"`
+	}
+
+	jsonPayload := ImageEditRequest{
+		Model:  "p-image-edit-lora",
+		Prompt: "Add a rainbow over the mountains",
+		Images: []string{"<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"},
+	}
+
+	jsonData, _ := json.Marshal(jsonPayload)
+	req2, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req2.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req2.Header.Set("Content-Type", "application/json")
+
+	res2, _ := client.Do(req2)
+	defer res2.Body.Close()
+	fmt.Println(res2.Status)
+}
+```
+
+```curl cURL theme={null}
+# Option 1: File Upload (Multipart)
+curl -X POST "https://platform.qubrid.com/v1/images/edits" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -F "model=p-image-edit-lora" \
+  -F "prompt=Add a rainbow over the mountains" \
+  -F "lora_weights=null" \
+  -F "lora_scale=1" \
+  -F "hf_api_token=null" \
+  -F "turbo=true" \
+  -F "aspect_ratio=16:9" \
+  -F "seed=1" \
+  -F "disable_safety_checker=false" \
+  -F "response_format=url" \
+  -F "files=@<YOUR-IMAGE-COMPLETE-PATH>"
+
+# Option 2: JSON with Image URLs
+curl -X POST "https://platform.qubrid.com/v1/images/edits" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "p-image-edit-lora",
+  "prompt": "Add a rainbow over the mountains",
+  "lora_weights": null,
+  "lora_scale": 1,
+  "hf_api_token": null,
+  "turbo": true,
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": false,
+  "response_format": "url",
+  "images": [
+    "<YOUR-IMAGE-URL-1>",
+    "<YOUR-IMAGE-URL-2>"
+  ]
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**P-Image Edit LoRA** is an image editing variant of the P-Image model developed by Pruna AI, combining text-guided image editing with LoRA (Low-Rank Adaptation) support for fine-tuned style control.  
+- It extends P-Image Edit with the ability to apply custom LoRA weights at inference time, enabling domain-specific visual style adaptation during the editing process.  
+- The model supports an optional turbo mode for faster inference while maintaining editing quality.  
+- P-Image Edit LoRA is suitable for production workflows requiring both precise image editing and lightweight style customization through LoRA adapters.
+
+---
+
+## Model at a Glance
+
+| Feature            | Details                                                                        |
+|--------------------|--------------------------------------------------------------------------------|
+| Model ID           | p-image-edit-lora                                                              |
+| Provider           | Pruna AI                                                                       |
+| Model Type         | Text-Guided Image Editing with LoRA Support                                    |
+| Architecture       | Optimized latent diffusion model with image conditioning and LoRA adapter support |
+| Input Type         | Image file upload or image URL                                                 |
+| Output Type        | Edited image based on text prompt with optional LoRA style control             |
+
+## When to use?
+
+You should consider using **P-Image Edit LoRA** if:
+
+- You need text-guided image editing with custom LoRA style control
+- Your application requires domain-specific visual adaptation during the editing process without full model retraining
+- You want optional turbo mode for faster inference without significantly compromising editing quality
+- You need flexible input support via file upload or image URLs with Hugging Face LoRA integration
+
+---
+
+## Inference Parameters
+
+| Parameter Name         | Type    | Default | Description                                                        |
+|------------------------|---------|---------|------------------------------------------------------------------- |
+| Prompt                 | string  | —       | Text instruction describing the desired edit.                      |
+| LoRA Weights           | string  | null    | Path or identifier of the LoRA weights to apply at inference.      |
+| LoRA Scale             | number  | 1       | Strength of the LoRA adapter effect on the output image.           |
+| HF API Token           | string  | null    | Hugging Face API token required for accessing private LoRA weights. |
+| Turbo                  | boolean | true    | Enables turbo mode for faster inference.                           |
+| Aspect Ratio           | string  | 16:9    | Output image aspect ratio.                                         |
+| Seed                   | number  | 1       | Random seed for reproducibility.                                   |
+| Disable Safety Checker | boolean | false   | Disables the built-in safety filter if enabled.                    |
+| Response Format        | string  | url     | Format of the response — `url` or `b64_json`.                      |
+
+## Key Features
+
+- **LoRA Style Control**: Supports custom LoRA weights at inference time for domain-specific visual style adaptation during image editing without full model retraining.
+- **Text-Guided Image Editing**: Performs precise modifications to existing images based on natural language instructions while preserving visual fidelity.
+- **Turbo Mode**: Optional accelerated inference mode for faster editing results in production-scale workflows.
+- **Hugging Face Integration**: Accepts Hugging Face API tokens for seamless access to private or community LoRA weights.
+- **Flexible Input Support**: Accepts both multipart file uploads and JSON-based image URLs for seamless integration into diverse workflows.
+
+---
+
+## Summary
+
+**P-Image Edit LoRA** is a fast, customizable text-guided image editing model built by Pruna AI for production-scale workflows.  
+- It extends P-Image Edit with LoRA adapter support for lightweight style customization at inference time.  
+- The model supports turbo mode for accelerated inference and Hugging Face integration for LoRA weight access.  
+- It is suitable for developers and enterprises requiring scalable image editing with domain-specific visual style control.

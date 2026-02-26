@@ -1,5 +1,5 @@
 ---
-title: "Qwen Image Edit"
+title: 'Qwen Image Edit'
 description: '> A 20B multimodal diffusion model for precise, text-guided image editing with strong control over both visual semantics and appearance.'
 ---
 
@@ -35,7 +35,6 @@ url = "https://platform.qubrid.com/api/v1/qubridai/image/edit"
 headers = {
     "Authorization": "Bearer <QUBRID_API_KEY>"
 }
-
 payload = {
     "model": "Qwen/Qwen-Image-Edit",
     "prompt": "Add a rainbow over the mountains",
@@ -45,32 +44,24 @@ payload = {
     "seed": 50,
     "use_inpainting": "false"
 }
-
 files = {
     "image": open("image.png", "rb")
 }
-
 response = requests.post(
     url,
     headers=headers,
     data=payload,
     files=files
 )
-
 if response.status_code != 200:
     print(f"Error {response.status_code}: {response.text}")
     exit(1)
-
 result = response.json()
-
 image_base64 = result["edited_image"]
 image_base64 = image_base64.split(",")[-1]
-
 image_bytes = base64.b64decode(image_base64)
-
 with open("edited_image.png", "wb") as f:
     f.write(image_bytes)
-
 print("Image saved to edited_image.png")
 ```
 
@@ -200,7 +191,7 @@ curl --location 'https://platform.qubrid.com/api/v1/qubridai/image/edit' \
 ```
 </CodeGroup>
 
-## API Generated Response
+### API Generated Response
 - Input Image
 <Frame>
   <img src="/images/z-image-turbo-demo.png" />
@@ -211,7 +202,9 @@ curl --location 'https://platform.qubrid.com/api/v1/qubridai/image/edit' \
   <img src="/images/Qwen-Image-Edit-Demo.png" />
 </Frame>
 
-## Model Overview
+## Qwen Image Edit
+
+### Model Overview
 **Qwen Image Edit** is the image editing version of Qwen-Image, built on top of the 20B Qwen-Image model.  
 - It extends Qwen-Image’s text rendering capabilities to image editing tasks, enabling precise text edits directly within images.  
 - The model processes the input image through Qwen2.5-VL for visual semantic control and a VAE Encoder for visual appearance control, allowing both semantic-level and appearance-level edits in a single workflow.  
@@ -219,7 +212,7 @@ curl --location 'https://platform.qubrid.com/api/v1/qubridai/image/edit' \
 
 ---
 
-## Model at a Glance
+### Model at a Glance
 
 | Feature | Details |
 |------|------|
@@ -232,7 +225,7 @@ curl --location 'https://platform.qubrid.com/api/v1/qubridai/image/edit' \
 
 ---
 
-## When to use?
+### When to use?
 You should use **Qwen Image Edit** if you need:
 - Text-guided image editing with precise control  
 - Direct text addition, deletion, or modification in images while preserving original font, size, and style  
@@ -241,13 +234,13 @@ You should use **Qwen Image Edit** if you need:
 
 ---
 
-## Supported Editing Capabilities
+### Supported Editing Capabilities
 - Low-level visual appearance editing (adding, removing, or modifying elements while keeping other regions unchanged)
 - High-level visual semantic editing (object rotation, style transfer, IP creation with semantic consistency)
 - Precise bilingual text editing (Chinese and English)
 ---
 
-## Inference Parameters
+### Inference Parameters
 
 | Parameter Name   | Type   | Default | Description                                   |
 |------------------|--------|---------|-----------------------------------------------|
@@ -256,14 +249,16 @@ You should use **Qwen Image Edit** if you need:
 | Steps            | number | 25      | Number of generation steps                    |
 | Seed             | number | 50      | Random seed for reproducibility               |
 
-## Key Features
+### Key Features
 - **Semantic and Appearance Editing**: Supports both low-level appearance edits (with unchanged surrounding regions) and high-level semantic edits while maintaining semantic consistency.  
 - **Precise Text Editing**: Enables direct addition, deletion, and modification of Chinese and English text in images while preserving original font, size, and style.  
 - **Dual Visual Control Pipeline**: Uses Qwen2.5-VL for visual semantic control and a VAE Encoder for visual appearance control within the same editing process.  
 - **Text-Guided Image Editing**: Performs controlled edits through text instructions while preserving visual fidelity and layout.  
 - **Strong Benchmark Performance**: Achieves state-of-the-art performance on multiple public image editing benchmarks.
+
 ---
-## Summary
+
+### Summary
 **Qwen Image Edit** is a multimodal diffusion model designed for controlled image editing tasks.  
 - It extends Qwen-Image’s text rendering strengths to precise image and text edits.  
 - The model supports both semantic-level and appearance-level modifications in a single workflow.  

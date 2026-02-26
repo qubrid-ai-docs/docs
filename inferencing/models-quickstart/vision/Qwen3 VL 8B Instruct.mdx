@@ -1,5 +1,5 @@
 ---
-title: "Qwen3 VL 8B Instruct"
+title: 'Qwen3 VL 8B Instruct'
 description: '> A vision-language instruction-tuned model for multimodal understanding, OCR, and visual reasoning'
 ---
 <Frame>
@@ -26,132 +26,98 @@ You can choose the one that best fits your workflow.
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
-from pprint import pprint
+from openai import OpenAI
 
-url = "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat"
-headers = {
-  "Authorization": "Bearer <QUBRID_API_KEY>",
-  "Content-Type": "application/json"
-}
-
-data = {
-  "model": "Qwen/Qwen3-VL-8B-Instruct",
-  "max_tokens": 4096,
-  "temperature": 0.7,
-  "stream": False,
-  "messages": [
-      {
-          "role": "user",
-          "content": [
-              {
-                  "type": "text",
-                  "text": "Describe all images in one sentence."
-              },
-              {
-              "type": "image_url",
-              "image_url": {
-                  "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
-              }
-              }
-          ]
-      }
-  ]
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data,
-    stream=True  
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
 )
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3-VL-8B-Instruct",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=2048,
+    temperature=0.7,
+    top_p=0.9,
+    stream=True,
+    presence_penalty=0
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
 
 ```
 
 ```js JavaScript theme={null}
-(async () => {
-  const body = {
-    model: "Qwen/Qwen3-VL-8B-Instruct",
-    max_tokens: 4096,
-    temperature: 0.7,
-    stream: false,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: "Describe all images in one sentence.",
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
-            },
-          },
-        ],
-      },
-    ],
-  };
+import OpenAI from 'openai';
 
-  const res = await fetch(
-    "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat",
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3-VL-8B-Instruct',
+  messages: [
     {
-      method: "POST",
-      headers: {
-        Authorization:
-        "Bearer Qubrid_API_KEY",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const result = await res.json();
-    console.log(result);
-  }
-  else {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.replace("data:", "").trim();
-        if (payload === "[DONE]") return;
-        try {
-          const chunk = JSON.parse(payload);
-          console.log(chunk);
-        } catch {
-          console.log("Raw chunk:", payload);
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
         }
-      }
+      ]
     }
-  }
-})();
+  ],
+  max_tokens: 2048,
+  temperature: 0.7,
+  top_p: 0.9,
+  stream: true,
+  presence_penalty: 0
+});
 
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
 ```
 
 ```go Go theme={null}
@@ -163,98 +129,69 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func main() {
-	url := "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat"
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
 	data := map[string]interface{}{
-		"model":       "Qwen/Qwen3-VL-8B-Instruct",
-		"max_tokens":  4096,
-		"temperature": 0.7,
-		"stream": true, 
-		"messages": []interface{}{
-			map[string]interface{}{
+		"model": "Qwen/Qwen3-VL-8B-Instruct",
+		"messages": []map[string]interface{}{
+			{
 				"role": "user",
-				"content": []interface{}{
-					map[string]interface{}{
+				"content": []map[string]interface{}{
+					{
 						"type": "text",
-						"text": "Describe all images in one sentence.",
+						"text": "What is in this image? Describe the main elements.",
 					},
-					map[string]interface{}{
+					{
 						"type": "image_url",
-						"image_url": map[string]interface{}{
+						"image_url": map[string]string{
 							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
 						},
 					},
 				},
 			},
 		},
+		"max_tokens":       2048,
+		"temperature":      0.7,
+		"stream":           true,
+		"top_p":            0.9,
+		"presence_penalty": 0,
 	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Authorization", "Bearer <QUBRID_API_KEY>")
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var result map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-			panic(err)
-		}
-		fmt.Printf("%+v\n", result)
-		return
-	}
+
 	scanner := bufio.NewScanner(res.Body)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !strings.HasPrefix(line, "data:") {
-			continue
+		if line != "" {
+			fmt.Println(line)
 		}
-		payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-		if payload == "[DONE]" {
-			break
-		}
-		var chunk map[string]interface{}
-		if err := json.Unmarshal([]byte(payload), &chunk); err != nil {
-			fmt.Println("Raw chunk:", payload)
-			continue
-		}
-		fmt.Printf("%+v\n", chunk)
 	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
-}  
+}
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
-  -H "Authorization: Bearer <QUBRID_API_KEY>" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
-  --data '{
+  -d '{
   "model": "Qwen/Qwen3-VL-8B-Instruct",
-  "max_tokens": 4096,
-  "temperature": 0.7,
-  "stream": false,
   "messages": [
     {
       "role": "user",
       "content": [
         {
           "type": "text",
-          "text": "Describe all images in one sentence."
+          "text": "What is in this image? Describe the main elements."
         },
         {
           "type": "image_url",
@@ -264,7 +201,12 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
         }
       ]
     }
-  ]
+  ],
+  "max_tokens": 2048,
+  "temperature": 0.7,
+  "stream": true,
+  "top_p": 0.9,
+  "presence_penalty": 0
 }'
 ```
 
@@ -272,32 +214,24 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/multimodal/chat" \
 
 This will produce a response similar to the one below:
 
-```json theme={null}
-{
-  "id": "chatcmpl-8908cd8b586c496bbef3bba04edbbe99",
-  "object": "chat.completion",
-  "created": 1764851200,
-  "model": "Qwen/Qwen3-VL-8B-Instruct",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "The image shows the Statue of Liberty standing tall on Liberty Island in New York Harbor, with a clear blue sky in the background.",
-        "refusal": null
-      },
-      "logprobs": null,
-      "finish_reason": "stop",
-      "stop_reason": null,
-      "token_ids": null
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 128,
-    "total_tokens": 158,
-    "completion_tokens": 30
-  }
-}
+```plain theme={null}
+This image captures a classic and iconic view of New York City, featuring several key elements:
+
+- **The Statue of Liberty:** Dominating the left side of the frame, the statue stands tall on Liberty Island, 
+  its green patina clearly visible. She is depicted holding her torch aloft and a tablet in her other hand.
+
+- **The New York City Skyline:** In the background, the dense and towering skyline of Manhattan stretches 
+  across the horizon. Several famous skyscrapers are identifiable, including the Empire State Building 
+  (with its distinctive spire) and the modern glass-and-steel towers of the Financial District.
+
+- **The Water:** A wide expanse of the Hudson River or Upper Bay separates Liberty Island from the city. 
+  The water is calm, with gentle ripples, and a few small boats or buoys can be seen.
+
+- **The Setting:** The photograph appears to be taken during the "golden hour" – either sunrise or sunset – 
+  as indicated by the warm, soft light bathing the buildings and creating a serene atmosphere.
+
+Overall, the image presents a powerful and recognizable symbol of freedom and welcome set against the 
+backdrop of one of the world's most famous and bustling metropolises.
 ```
 
 ## Model Overview
@@ -332,7 +266,7 @@ Use **Qwen3 VL 8B. Instruct** if your inference workload requires:
 
 ---
 
-## Inference Parameters
+### Inference Parameters
 | Parameter Name   | Type    | Default | Description                                   |
 |------------------|---------|---------|-----------------------------------------------|
 | Streaming        | boolean | true    | Enable streaming responses for real-time output. |
