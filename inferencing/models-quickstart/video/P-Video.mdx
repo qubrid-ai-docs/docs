@@ -1,0 +1,500 @@
+---
+title: "P-Video"
+description: "> A premium AI video generation model supporting text-to-video, image-to-video, and audio-conditioned workflows with cinematic-quality outputs."
+---
+
+## About the Provider
+Pruna AI is an AI optimization company focused on making state-of-the-art generative AI fast, affordable, and accessible. Their P-Video model is designed to deliver cinematic-quality video generation with configurable resolution, duration, FPS, and support for text, image, and audio-conditioned workflows.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `p-video` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `p-video` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+import requests
+
+url = "https://platform.qubrid.com/v1/videos/generations"
+headers = {"Authorization": "Bearer QUBRID_API_KEY"}
+
+# ─────────────────────────────────────────
+# Case 1: JSON body — image URL + audio URL
+# Works with text-only, image-only, audio-only, or both
+# ─────────────────────────────────────────
+response = requests.post(
+    url,
+    headers={**headers, "Content-Type": "application/json"},
+    json={
+        "model": "p-video",
+        "prompt": "A butterfly flying through a flower garden",
+        "duration": 5,
+        "resolution": "720p",
+        "fps": 24,
+        "aspect_ratio": "16:9",
+        "image": "https://example.com/input-image.jpg",   # optional
+        "audio": "https://example.com/audio.mp3",         # optional
+        "draft": False,
+        "save_audio": True,
+        "prompt_upsampling": True,
+    },
+)
+print(response.json())
+
+# ─────────────────────────────────────────
+# Case 2: File upload — image_file + audio_file (multipart)
+# Remove either file entry if not needed
+# ─────────────────────────────────────────
+with open("/path/to/your/image.jpg", "rb") as img, \
+     open("/path/to/your/audio.mp3", "rb") as aud:
+    response = requests.post(
+        url,
+        headers=headers,
+        data={
+            "model": "p-video",
+            "prompt": "A butterfly flying through a flower garden",
+            "duration": "5",
+            "resolution": "720p",
+            "fps": "24",
+            "draft": "false",
+            "save_audio": "true",
+            "prompt_upsampling": "true",
+        },
+        files={
+            "image_file": img,   # remove if not needed
+            "audio_file": aud,   # remove if not needed
+        },
+    )
+print(response.json())
+
+# ─────────────────────────────────────────
+# Tip: pass image/audio as URL via form fields (no file needed)
+# files={} is required to force multipart/form-data
+# ─────────────────────────────────────────
+response = requests.post(
+    url,
+    headers=headers,
+    data={
+        "model": "p-video",
+        "prompt": "A butterfly flying through a flower garden",
+        "image": "https://example.com/input-image.jpg",   # optional
+        "audio": "https://example.com/audio.mp3",         # optional
+        "resolution": "720p",
+        "fps": "24",
+        "draft": "false",
+        "save_audio": "true",
+        "prompt_upsampling": "true",
+    },
+    files={},  # forces multipart/form-data — do not remove
+)
+print(response.json())
+```
+
+```js JavaScript theme={null}
+import fs from "fs";
+
+// ─────────────────────────────────────────
+// Case 1: JSON body — text / image URL / audio URL (or all together)
+// Remove "image" and/or "audio" keys if not needed
+// When "image" present → aspect_ratio ignored
+// When "audio" present → duration ignored
+// ─────────────────────────────────────────
+const response1 = await fetch("https://platform.qubrid.com/v1/videos/generations", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "p-video",
+    prompt: "A butterfly flying through a flower garden",
+    duration: 5,
+    resolution: "720p",
+    fps: 24,
+    aspect_ratio: "16:9",
+    image: "https://example.com/input-image.jpg",   // optional
+    audio: "https://example.com/audio.mp3",         // optional
+    draft: false,
+    save_audio: true,
+    prompt_upsampling: true,
+  }),
+});
+const result1 = await response1.json();
+console.log(result1.data[0].video_url);
+
+// ─────────────────────────────────────────
+// Case 2: File upload — image_file + audio_file (multipart)
+// Remove either append line if only one file is needed
+// ─────────────────────────────────────────
+const form = new FormData();
+form.append("model", "p-video");
+form.append("prompt", "A butterfly flying through a flower garden");
+form.append("duration", "5");
+form.append("resolution", "720p");
+form.append("fps", "24");
+form.append("draft", "false");
+form.append("save_audio", "true");
+form.append("prompt_upsampling", "true");
+form.append("image_file", fs.createReadStream("/path/to/your/image.jpg"));  // remove if not needed
+form.append("audio_file", fs.createReadStream("/path/to/your/audio.mp3"));  // remove if not needed
+
+const response2 = await fetch("https://platform.qubrid.com/v1/videos/generations", {
+  method: "POST",
+  headers: { Authorization: "Bearer QUBRID_API_KEY" },
+  body: form,
+});
+const result2 = await response2.json();
+console.log(result2.data[0].video_url);
+
+// ─────────────────────────────────────────
+// Tip: pass image/audio as URL via form fields (no file upload needed)
+// ─────────────────────────────────────────
+const form2 = new FormData();
+form2.append("model", "p-video");
+form2.append("prompt", "A butterfly flying through a flower garden");
+form2.append("image", "https://example.com/input-image.jpg");  // optional
+form2.append("audio", "https://example.com/audio.mp3");        // optional
+form2.append("resolution", "720p");
+form2.append("fps", "24");
+form2.append("draft", "false");
+form2.append("save_audio", "true");
+form2.append("prompt_upsampling", "true");
+
+const response3 = await fetch("https://platform.qubrid.com/v1/videos/generations", {
+  method: "POST",
+  headers: { Authorization: "Bearer QUBRID_API_KEY" },
+  body: form2,
+});
+const result3 = await response3.json();
+console.log(result3.data[0].video_url);
+
+```
+
+```go Go theme={null}
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/videos/generations"
+
+	// ─────────────────────────────────────────
+	// Case 1: JSON body — text / image URL / audio URL (or all together)
+	// Remove Image/Audio fields if not needed
+	// When Image present → AspectRatio ignored
+	// When Audio present → Duration ignored
+	// ─────────────────────────────────────────
+	type VideoRequest struct {
+		Model            string `json:"model"`
+		Prompt           string `json:"prompt"`
+		Duration         int    `json:"duration"`
+		Resolution       string `json:"resolution"`
+		FPS              int    `json:"fps"`
+		AspectRatio      string `json:"aspect_ratio"`
+		Image            string `json:"image,omitempty"`
+		Audio            string `json:"audio,omitempty"`
+		Draft            bool   `json:"draft"`
+		SaveAudio        bool   `json:"save_audio"`
+		PromptUpsampling bool   `json:"prompt_upsampling"`
+	}
+
+	jsonPayload := VideoRequest{
+		Model:            "p-video",
+		Prompt:           "A butterfly flying through a flower garden",
+		Duration:         5,
+		Resolution:       "720p",
+		FPS:              24,
+		AspectRatio:      "16:9",
+		Image:            "https://example.com/input-image.jpg", // optional — remove if not needed
+		Audio:            "https://example.com/audio.mp3",       // optional — remove if not needed
+		Draft:            false,
+		SaveAudio:        true,
+		PromptUpsampling: true,
+	}
+
+	jsonData, _ := json.Marshal(jsonPayload)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+	fmt.Println(resp.Status)
+
+	// ─────────────────────────────────────────
+	// Case 2: File upload — image_file + audio_file (multipart)
+	// Remove either block if only one file is needed
+	// ─────────────────────────────────────────
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	writer.WriteField("model", "p-video")
+	writer.WriteField("prompt", "A butterfly flying through a flower garden")
+	writer.WriteField("duration", "5")
+	writer.WriteField("resolution", "720p")
+	writer.WriteField("fps", "24")
+	writer.WriteField("draft", "false")
+	writer.WriteField("save_audio", "true")
+	writer.WriteField("prompt_upsampling", "true")
+
+	imgFile, _ := os.Open("/path/to/your/image.jpg") // remove if not needed
+	defer imgFile.Close()
+	imgPart, _ := writer.CreateFormFile("image_file", "image.jpg")
+	io.Copy(imgPart, imgFile)
+
+	audFile, _ := os.Open("/path/to/your/audio.mp3") // remove if not needed
+	defer audFile.Close()
+	audPart, _ := writer.CreateFormFile("audio_file", "audio.mp3")
+	io.Copy(audPart, audFile)
+
+	writer.Close()
+
+	req2, _ := http.NewRequest("POST", url, body)
+	req2.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req2.Header.Set("Content-Type", writer.FormDataContentType())
+
+	resp2, _ := client.Do(req2)
+	defer resp2.Body.Close()
+	fmt.Println(resp2.Status)
+
+	// ─────────────────────────────────────────
+	// Tip: pass image/audio as URL via form fields (no file upload needed)
+	// ─────────────────────────────────────────
+	body3 := &bytes.Buffer{}
+	writer3 := multipart.NewWriter(body3)
+	writer3.WriteField("model", "p-video")
+	writer3.WriteField("prompt", "A butterfly flying through a flower garden")
+	writer3.WriteField("image", "https://example.com/input-image.jpg") // optional
+	writer3.WriteField("audio", "https://example.com/audio.mp3")       // optional
+	writer3.WriteField("resolution", "720p")
+	writer3.WriteField("fps", "24")
+	writer3.WriteField("draft", "false")
+	writer3.WriteField("save_audio", "true")
+	writer3.WriteField("prompt_upsampling", "true")
+	writer3.Close()
+
+	req3, _ := http.NewRequest("POST", url, body3)
+	req3.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req3.Header.Set("Content-Type", writer3.FormDataContentType())
+
+	resp3, _ := client.Do(req3)
+	defer resp3.Body.Close()
+	fmt.Println(resp3.Status)
+}
+```
+
+```curl cURL theme={null}
+# ─────────────────────────────────────────
+# Case 1: JSON body — text / image URL / audio URL (or all together)
+# Remove "image" and/or "audio" keys if not needed
+# When "image" present → aspect_ratio ignored
+# When "audio" present → duration ignored
+# ─────────────────────────────────────────
+curl -X POST "https://platform.qubrid.com/v1/videos/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "p-video",
+    "prompt": "A butterfly flying through a flower garden",
+    "duration": 5,
+    "resolution": "720p",
+    "fps": 24,
+    "aspect_ratio": "16:9",
+    "image": "https://example.com/input-image.jpg",
+    "audio": "https://example.com/audio.mp3",
+    "draft": false,
+    "save_audio": true,
+    "prompt_upsampling": true
+  }'
+
+# ─────────────────────────────────────────
+# Case 2: File upload — image_file + audio_file (multipart)
+# Remove either -F line if only one file is needed
+# ─────────────────────────────────────────
+curl -X POST "https://platform.qubrid.com/v1/videos/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -F "model=p-video" \
+  -F "prompt=A butterfly flying through a flower garden" \
+  -F "duration=5" \
+  -F "resolution=720p" \
+  -F "fps=24" \
+  -F "draft=false" \
+  -F "save_audio=true" \
+  -F "prompt_upsampling=true" \
+  -F "image_file=@/path/to/your/image.jpg" \
+  -F "audio_file=@/path/to/your/audio.mp3"
+
+# ─────────────────────────────────────────
+# Tip: pass image/audio as URL via form fields (no file upload needed)
+# ─────────────────────────────────────────
+curl -X POST "https://platform.qubrid.com/v1/videos/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -F "model=p-video" \
+  -F "prompt=A butterfly flying through a flower garden" \
+  -F "image=https://example.com/input-image.jpg" \
+  -F "audio=https://example.com/audio.mp3" \
+  -F "resolution=720p" \
+  -F "fps=24" \
+  -F "draft=false" \
+  -F "save_audio=true" \
+  -F "prompt_upsampling=true"
+
+```
+
+</CodeGroup>
+
+## Example Generations
+
+Below are some example videos generated by the **P-Video** model, showcasing its cinematic quality and capabilities:
+
+---
+**Prompt:** Generate a breaking news style video with the provided reporter face and audio with facial movements.
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U1_output.mp4"
+></video>
+</Frame>
+---
+**Prompt:** Create a warm, emotional animated storytelling video using the provided image of a father sitting beside a child in bed reading a book at night. The father is gently reading aloud from the book, and his mouth should move naturally in sync with the narration audio.
+
+**Story:**
+The old clockmaker, Elias, lived in a world of ticking seconds, but his own time was running out. His shop smelled of brass and aged oil, filled with hundreds of clocks that hummed in unison.
+One rainy afternoon, a young girl entered, clutching a pocket watch that had stopped. "Can you fix it?" she asked. "It belonged to my grandfather."
+Elias examined the watch. It wasn’t broken, just neglected. "It needs care, not repair," he whispered. As he worked, he told her stories of the watches, how they held moments of joy and sorrow, beating only when someone remembered them.
+When he returned the watch, it was ticking steadily. The girl smiled, her eyes reflecting the shop's light. Elias didn't ask for payment. He knew the watch would keep ticking, and in that, he found his own timelessness.
+
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U2_output.mp4"
+></video>
+</Frame>
+---
+**Prompt:** Transform the scene into a suspenseful alien attack sequence with eerie lighting shifts, shadows, atmospheric effects, character fear reactions synced to audio, dynamic camera motion, and cinematic VFX like distant alien silhouettes or lights.
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U3_output.mp4"
+></video>
+</Frame>
+---
+**Prompt:** Create a cute animated video from the provided image where the child explains gravity with lip-synced audio, showing an apple falling from above due to gravity and gently bonking his head with a funny reaction, using bright lighting, smooth motion, and a playful cartoon style.
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U4_output.mp4"
+></video>
+</Frame>
+---
+**Prompt:** Create a cute animated video from the provided image where the child explains gravity with lip-synced audio, showing an apple falling from above due to gravity and gently bonking his head with a funny reaction, using bright lighting, smooth motion, and a playful cartoon style.
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U5_output.mp4"
+></video>
+</Frame>
+---
+**Prompt:** Create a professional talking-head video using the provided female face image and audio, with accurate lip-sync, natural facial expressions, subtle head and eye movement, and place her in a clean, well-lit modern studio or cozy indoor setting with soft background blur, cinematic lighting, and smooth camera motion so it feels like a high-quality presenter explaining the audio.
+<Frame>
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="/videos/U6_output.mp4"
+></video>
+</Frame>
+---
+## Model Overview
+
+**P-Video** is a premium AI video generation model developed by Pruna AI, designed for cinematic-quality video outputs.  
+- It supports text-to-video, image-to-video, and audio-conditioned workflows with configurable resolution, duration, and FPS.  
+- Prompt upsampling automatically enhances prompts for improved visual coherence and motion realism.  
+- P-Video is suitable for production workflows requiring fast, scalable, and high-quality video generation across diverse creative and commercial use cases.
+
+---
+
+## Model at a Glance
+
+| Feature            | Details                                              |
+|--------------------|------------------------------------------------------|
+| Model ID           | p-video                                              |
+| Provider           | Pruna AI                                             |
+| Model Type         | Video Generation                                     |
+| Architecture       | Proprietary multi-modal video diffusion architecture |
+| Release Date       | 2026                                                 |
+| License            | Proprietary                                          |
+| Output Type        | Video generated from text, image, or audio input     |
+
+## When to use?
+
+You should consider using **P-Video** if:
+
+- You need cinematic-quality text-to-video generation
+- Your application requires image-to-video animation
+- You want audio-conditioned video storytelling
+- You are creating marketing, advertising, or social media content
+- You need rapid video prototyping with configurable quality settings
+
+---
+
+## Inference Parameters
+
+| Parameter Name    | Type    | Default | Description                                                                              |
+|-------------------|---------|---------|------------------------------------------------------------------------------------------|
+| Duration          | number  | 5       | Duration of the video in seconds (1–10). Ignored when audio is provided.                |
+| Resolution        | select  | 720p    | Video resolution. Options: `720p`, `1080p`.                                              |
+| FPS               | select  | 24      | Frames per second. Options: `24` or `48`.                                                |
+| Aspect Ratio      | select  | 16:9    | Aspect ratio of the video. Options: `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `1:1`. Ignored when an input image is provided. |
+| Seed              | number  | 0       | Random seed for reproducible video generation.                                           |
+| Draft Mode        | boolean | false   | Generate a lower-quality preview version of the video.                                   |
+| Save Audio        | boolean | true    | Whether to include audio in the final generated video.                                   |
+| Prompt Upsampling | boolean | true    | Use automatic prompt enhancement for better results.                                     |
+
+
+## Key Features
+
+- **Text-to-Video Generation**: Generates cinematic-quality videos from text prompts with configurable resolution, FPS, and duration.
+- **Image-to-Video Animation**: Accepts an input image to animate into a video sequence with motion synthesis.
+- **Audio-Conditioned Generation**: Supports audio input to condition video generation for synchronized storytelling.
+- **Prompt Upsampling**: Automatically enhances prompts for improved visual coherence and motion realism.
+- **Flexible Input Support**: Accepts JSON body with URLs or multipart file uploads for image and audio inputs.
+- **Draft Mode**: Generates lower-quality preview videos at reduced cost for rapid prototyping.
+
+## Limitations
+
+- Maximum duration limited to 10 seconds.
+- Audio formats limited to `flac`, `mp3`, and `wav`.
+- Higher resolution increases generation time.
+- Sync mode may timeout for longer videos.
+
+---
+
+## Summary
+
+**P-Video** is a premium AI video generation model built by Pruna AI for cinematic-quality video outputs.  
+- It supports text-to-video, image-to-video, and audio-conditioned workflows with configurable resolution up to 1080p.  
+- The model offers flexible input support via JSON body or multipart file uploads.  
+- It is suitable for developers and enterprises requiring scalable, high-quality video generation for creative and commercial workflows.

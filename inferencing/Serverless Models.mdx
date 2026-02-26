@@ -1,53 +1,68 @@
+---
+title: 'Serverless Models'
+description: 'Browse all available serverless models on Qubrid AI platform.'
+---
+
 ## Chat Models
 
-| Organization    | Model Name                           | API Model String                                  | Context length | Quantization |
-| :-------------- | :----------------------------------- | :------------------------------------------------ | :------------- | :----------- |
-| OpenAI          | GPT OSS 120B                         | openai/gpt-oss-120b                               | 128000         | MXFP4        |
-| OpenAI          | GPT OSS 20B                          | openai/gpt-oss-20b                                | 128000         | MXFP4        |    
-| DeepSeek        | DeepSeek R1 Distill Llama 70B        | deepseek-ai/deepseek-r1-distill-llama-70b         | 65000          | FP16         |
-| Mistral AI      | Mistral (7B) Instruct v0.3           | mistralai/Mistral-7B-Instruct-v0.3                | 32768          | FP16         |
-| Nvidia            | Nemotron Orchestrator 8B        | nvidia/Orchestrator-8B                 | 16384         | FP16         |
-| Microsoft            | Fara 7B         | microsoft/Fara-7B                 | 8192        | FP16         |
-| Meta            | Llama 3.3 70B Instruct         | meta-llama/Llama-3.3-70B-Instruct                 | 8192        | FP16         |
+| Organization | Model Name | API Model String | Context length | Quantization |
+| :----------- | :--------- | :--------------- | :------------- | :----------- |
+| OpenAI | GPT OSS 120B | openai/gpt-oss-120b | 128000 | MXFP4 |
+| OpenAI | GPT OSS 20B | openai/gpt-oss-20b | 128000 | MXFP4 |
+| DeepSeek | DeepSeek R1 Distill Llama 70B | deepseek-ai/deepseek-r1-distill-llama-70b | 65000 | FP16 |
+| Mistral AI | Mistral (7B) Instruct v0.3 | mistralai/Mistral-7B-Instruct-v0.3 | 32768 | FP16 |
+| NVIDIA | Nemotron Orchestrator 8B | nvidia/Orchestrator-8B | 16384 | FP16 |
+| NVIDIA | Nemotron 3 Nano 30B | nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 | 262144 | BF16 |
+| Microsoft | Fara 7B | microsoft/Fara-7B | 8192 | FP16 |
+| Meta | Llama 3.3 70B Instruct | meta-llama/Llama-3.3-70B-Instruct | 8192 | FP16 |
 
 ## Code Models
 
-| Organization    | Model Name                           | API Model String                                  | Context length | Quantization |
-| :-------------- | :----------------------------------- | :------------------------------------------------ | :------------- | :----------- |
-| Qwen            | Qwen3 Coder 30B A3B Instruct         | Qwen/Qwen3-Coder-30B-A3B-Instruct                 | 131000         | FP16         |
+| Organization | Model Name | API Model String | Context length | Quantization |
+| :----------- | :--------- | :--------------- | :------------- | :----------- |
+| Qwen | Qwen3 Coder 30B A3B Instruct | Qwen/Qwen3-Coder-30B-A3B-Instruct | 131000 | FP16 |
 
 ## Image Models
 
-| Organization      | Model Name                         | API Model String                     | Model Type               | Default steps |
-| :---------------- | :--------------------------------- | :--------------------------------------- | :----------------------- | :------------ |
-| Qwen Tongyi MAI   | Z Image Turbo                      | Tongyi-MAI/Z-Image-Turbo                 | Image Generation         | 9             |
-| Stability AI      | Stable Diffusion 3.5 Large         | stabilityai/stable-diffusion-3.5-large   | Image Generation         | 30            |
-| Qwen              | Qwen Image Edit                    | Qwen/Qwen-Image-Edit                     | Image Edit               | 20            |
+| Organization | Model Name | API Model String | Model Type | Default steps |
+| :----------- | :--------- | :--------------- | :--------- | :------------ |
+| Pruna AI | P-Image | p-image | Image Generation | — |
+| Pruna AI | P-Image LoRA | p-image-lora | Image Generation | — |
+| Pruna AI | P-Image Edit | p-image-edit | Image Edit | — |
+| Pruna AI | P-Image Edit LoRA | p-image-edit-lora | Image Edit | — |
+| Qwen Tongyi MAI | Z Image Turbo | Tongyi-MAI/Z-Image-Turbo | Image Generation | 9 |
+| Stability AI | Stable Diffusion 3.5 Large | stabilityai/stable-diffusion-3.5-large | Image Generation | 30 |
+| Qwen | Qwen Image Edit | Qwen/Qwen-Image-Edit | Image Edit | 20 |
 
-## Audio models
 
-| Organization | Modality       | Model Name       | API Model String         |
-| :----------- | :------------- | :--------------- | :----------------------------- |
-| OpenAI       | Speech-to-Text | Whisper Large v3 | openai/whisper-large-v3        |
+## Audio Models
 
+| Organization | Modality | Model Name | API Model String |
+| :----------- | :------- | :--------- | :--------------- |
+| OpenAI | Speech-to-Text | Whisper Large v3 | openai/whisper-large-v3 |
+
+## Video Models
+
+| Organization | Model Name | API Model String | Max Duration | Max Resolution |
+| :----------- | :--------- | :--------------- | :----------- | :------------- |
+| Pruna AI | P-Video | p-video | 10 seconds | 1080p |
 
 ## OCR Models
 
-| Organization    | Model Name                           | API Model String                                  | Context length |
-| :-------------- | :----------------------------------- | :------------------------------------------------ | :------------- |
-| Tencent            | Hunyuan OCR (1B)                 | tencent/HunyuanOCR                         | 16000          |
+| Organization | Model Name | API Model String | Context length |
+| :----------- | :--------- | :--------------- | :------------- |
+| Tencent | Hunyuan OCR (1B) | tencent/HunyuanOCR | 16000 |
 
-## Vision models
+## Vision Models
 
-| Organization    | Model Name                           | API Model String                                  | Context length |
-| :-------------- | :----------------------------------- | :------------------------------------------------ | :------------- |
-| Qwen            | Qwen3-VL 8B Instruct                 | Qwen/Qwen3-VL-8B-Instruct                         | 32768          |
-| Qwen            | Qwen3-VL-30B-A3B-Instruct | Qwen/Qwen3-VL-30B-A3B-Instruct                         | 128000          |
-| Qwen            | Qwen2.5-VL 7B Instruct               | Qwen/Qwen2.5-VL-7B-Instruct                       | 32768          |
+| Organization | Model Name | API Model String | Context length |
+| :----------- | :--------- | :--------------- | :------------- |
+| Qwen | Qwen3-VL 8B Instruct | Qwen/Qwen3-VL-8B-Instruct | 32768 |
+| Qwen | Qwen3-VL 30B A3B Instruct | Qwen/Qwen3-VL-30B-A3B-Instruct | 128000 |
+| Qwen | Qwen2.5-VL 7B Instruct | Qwen/Qwen2.5-VL-7B-Instruct | 32768 |
 
+## Embedding Models
 
-## Embedding models
-
-| Model Name                     | API Model String                       | Model Size | Embedding Dimension | Context Window |
-| :----------------------------- | ------------------------------------------ | :--------- | :------------------ | :------------- |
-| BGE-Large-EN-v1.5              | BAAI/bge-large-en-v1.5                     | 326M       | 1024                | 512            |
+| Model Name | API Model String | Model Size | Embedding Dimension | Context Window |
+| :--------- | :--------------- | :--------- | :------------------ | :------------- |
+| BGE-Large-EN-v1.5 | BAAI/bge-large-en-v1.5 | 326M | 1024 | 512 |

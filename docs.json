@@ -47,7 +47,8 @@
                       "inferencing/models-quickstart/chat/GPT OSS 20B",
                       "inferencing/models-quickstart/chat/DeepSeek R1 Distill Llama 70B",
                       "inferencing/models-quickstart/chat/Mistral 7B",
-                      "inferencing/models-quickstart/chat/Nemotron Orchestrator 8B",
+                      "inferencing/models-quickstart/chat/Nvidia Orchestrator 8B",
+                      "inferencing/models-quickstart/chat/Nemotron 3 Nano 30B",
                       "inferencing/models-quickstart/chat/Fara 7B",
                       "inferencing/models-quickstart/chat/Meta Llama 3.3 70B Instruct"
                     ]
@@ -61,6 +62,10 @@
                   {
                     "group": "Image Models",
                     "pages": [
+                      "inferencing/models-quickstart/image/P-Image",
+                      "inferencing/models-quickstart/image/P-Image LoRA",
+                      "inferencing/models-quickstart/image/P-Image Edit",
+                      "inferencing/models-quickstart/image/P-Image Edit LoRA",
                       "inferencing/models-quickstart/image/Z Image Turbo",
                       "inferencing/models-quickstart/image/Qwen Image Edit",
                       "inferencing/models-quickstart/image/Stable Diffusion 3.5 Large"
@@ -70,6 +75,12 @@
                     "group": "Audio Models",
                     "pages": [
                       "inferencing/models-quickstart/audio/Whisper Large v3"
+                    ]
+                  },
+                  {
+                    "group": "Video Models",
+                    "pages": [
+                      "inferencing/models-quickstart/video/P-Video"
                     ]
                   },
                   {

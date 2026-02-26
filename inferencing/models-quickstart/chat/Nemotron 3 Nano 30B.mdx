@@ -1,0 +1,272 @@
+---
+title: 'Nemotron 3 Nano 30B'
+description: "> NVIDIA's flagship open reasoning model with a hybrid Mamba-Transformer MoE architecture, delivering 3.3× higher throughput with state-of-the-art accuracy on reasoning, coding, and agentic benchmarks."
+---
+
+
+## About the Provider
+NVIDIA is a global leader in AI computing and accelerated hardware, known for its GPUs and enterprise AI platforms. Through its NeMo and research initiatives, NVIDIA develops advanced models to enable reasoning, tool orchestration, and scalable AI workflows for developers and enterprises.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```python Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+    messages=[
+      {
+        "role": "user",
+        "content": "Explain quantum computing in simple terms"
+      }
+    ],
+    max_tokens=8192,
+    temperature=0.3,
+    top_p=1,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16',
+  messages: [
+    {
+      "role": "user",
+      "content": "Explain quantum computing in simple terms"
+    }
+  ],
+  max_tokens: 8192,
+  temperature: 0.3,
+  top_p: 1,
+  stream: true
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": "Explain quantum computing in simple terms",
+			},
+		},
+		"temperature": 0.3,
+		"max_tokens":  8192,
+		"stream":      true,
+		"top_p":       1,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain quantum computing in simple terms"
+    }
+  ],
+  "temperature": 0.3,
+  "max_tokens": 8192,
+  "stream": true,
+  "top_p": 1
+}'
+```
+</CodeGroup>
+
+This will produce a response similar to the one below:
+```plain theme={null}
+<think>
+The user wants a simple explanation of quantum computing. Let me break this down 
+into digestible concepts — classical bits vs qubits, superposition, entanglement, 
+and practical applications...
+</think>
+
+Quantum computing is a fundamentally different way of processing information.
+
+**Classical vs Quantum:**
+- Classical computers use bits that are either 0 or 1
+- Quantum computers use qubits that can be 0, 1, or both simultaneously (superposition)
+
+**Key principles:**
+- Superposition: A qubit exists in multiple states at once until measured
+- Entanglement: Two qubits can be linked so the state of one instantly affects the other
+- Interference: Used to amplify correct answers and cancel incorrect ones
+
+**Why it matters:**
+Quantum computers can solve certain problems exponentially faster than classical 
+computers — particularly in cryptography, drug discovery, and optimization tasks 
+that would take classical computers thousands of years.
+...
+```
+
+## Model Overview
+
+**Nemotron 3 Nano 30B-A3B** is NVIDIA's flagship open reasoning model, featuring a revolutionary hybrid Mamba-Transformer Mixture-of-Experts architecture.  
+- With 31.6B total parameters but only 3.2B active per forward pass, it delivers up to 3.3× higher throughput than comparable models.  
+- It achieves state-of-the-art accuracy on reasoning, coding, and agentic benchmarks including SWE-Bench, GPQA Diamond, and AIME 2025.  
+- The model supports up to 262K token context length and features configurable reasoning depth with thinking budget control.
+
+---
+
+## Model at a Glance
+
+| Feature         | Details                                                                                                               |
+|-----------------|-----------------------------------------------------------------------------------------------------------------------|
+| Model ID        | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16`                                                                         |
+| Provider        | NVIDIA                                                                                                                |
+| Architecture    | Hybrid Mamba-Transformer MoE with 23 Mamba-2 layers, 23 MoE layers (128 experts, 6 active), and 6 GQA attention layers |
+| Model Size      | 31.6B Total / 3.2B Active                                                                                             |
+| Context Length  | 262K Tokens                                                                                                           |
+| Release Date    | December 15, 2025                                                                                                     |
+| License         | NVIDIA Open Model License                                                                                             |
+| Training Data   | 25T tokens including 3T new unique tokens, 10.6T total with 33% synthetic data for math, code, and tool-calling       |
+
+## When to use?
+
+You should consider using **Nemotron 3 Nano 30B-A3B** if:
+
+- You need agentic AI systems and multi-agent orchestration
+- Your application requires complex reasoning and problem-solving tasks
+- You are working on code generation, debugging, and optimization
+- You need function calling and tool integration
+- Your use case involves long-document analysis and RAG applications
+- You are solving mathematical reasoning and STEM tasks
+- You need enterprise chatbots with deep reasoning capabilities
+- Your application requires financial analysis and decision support
+
+---
+
+### Inference Parameters
+
+| Parameter Name  | Type    | Default | Description                                                                        |
+|-----------------|---------|---------|------------------------------------------------------------------------------------|
+| Streaming       | boolean | true    | Enable streaming responses for real-time output.                                   |
+| Temperature     | number  | 0.3     | Controls randomness. Higher values mean more creative but less predictable output. |
+| Max Tokens      | number  | 8192    | Maximum number of tokens to generate in the response.                              |
+| Top P           | number  | 1       | Nucleus sampling: considers tokens with top_p probability mass.                    |
+| Enable Reasoning| boolean | true    | Enable chain-of-thought reasoning traces before final response.                    |
+| Thinking Budget | number  | 16384   | Maximum tokens for reasoning traces. Controls inference cost and reasoning depth.  |
+
+## Key Features
+
+- **Hybrid Mamba-Transformer MoE Architecture**: Combines Mamba-2 layers, MoE layers, and GQA attention for optimal efficiency and reasoning performance.
+- **3.3× Faster Inference**: Delivers higher throughput than Qwen3-30B-A3B with better accuracy, using only 10% of total parameters per forward pass.
+- **1M Token Context Window**: Supports long-horizon tasks including long-document analysis, RAG pipelines, and multi-turn conversations.
+- **Configurable Reasoning Depth**: Supports reasoning ON/OFF modes with thinking budget control for predictable inference costs.
+- **Native Tool Calling**: Built-in function calling with schema validation and tool-integrated reasoning.
+- **FP8 Quantization**: Reduces memory requirements and enables faster inference on supported hardware.
+- **Fully Open**: Weights, datasets, and training recipes are publicly available.
+
+## Benchmark Performance
+
+| Benchmark       | Performance                          |
+|-----------------|--------------------------------------|
+| SWE-Bench       | State-of-the-art                     |
+| GPQA Diamond    | State-of-the-art                     |
+| AIME 2025       | State-of-the-art                     |
+
+Delivers 3.3× faster inference than Qwen3-30B-A3B with better accuracy across reasoning, coding, and agentic benchmarks.
+
+## Limitations
+
+- **VRAM Requirements**: Requires 32GB+ VRAM for FP8 and 60GB+ for BF16 deployments.
+- **Architecture Maturity**: Hybrid architecture is less tested in production than pure transformer models.
+- **MMLU Performance**: May underperform on vanilla MMLU compared to harder benchmark variants.
+- **FlashInfer Dependency**: FlashInfer backend requires CUDA toolkit for JIT compilation.
+- **Community Tooling**: New architecture may have limited community tooling support compared to established models.
+
+---
+
+## Summary
+
+**Nemotron 3 Nano 30B-A3B** is NVIDIA's flagship open reasoning model built for high-throughput, accurate inference across reasoning, coding, and agentic tasks.  
+- Its hybrid Mamba-Transformer MoE architecture delivers 3.3× faster inference than comparable models with only 3.2B active parameters.  
+- The model supports up to 262K token context, configurable reasoning depth, native tool calling, and FP8 quantization.  
+- It achieves state-of-the-art results on SWE-Bench, GPQA Diamond, and AIME 2025 benchmarks.  
+- Weights, datasets, and training recipes are fully open under the NVIDIA Open Model License.

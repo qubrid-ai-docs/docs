@@ -26,131 +26,111 @@ You can choose the one that best fits your workflow.
 import requests
 import json
 
-url = "https://platform.qubrid.com/api/v1/qubridai/image/generation"
+url = "https://platform.qubrid.com/v1/images/generations"
 headers = {
-    "Authorization": "Bearer <QUBRID_API_KEY>",
-    "Content-Type": "application/json",
+    "Authorization": "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
 }
 
+# Prepare generation parameters
 data = {
-    "model": "stabilityai/stable-diffusion-3.5-large",
-    "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
-    "width": 1024,
-    "height": 1024,
-    "steps": 30,
-    "cfg": 7.5,
-    "seed": 42,
-}
-
-response = requests.post(url, headers=headers, json=data)
-
-if response.status_code == 200:
-    with open("generated_image.png", "wb") as f:
-        f.write(response.content)
-    print("Image saved to generated_image.png")
-else:
-    print(f"Error {response.status_code}: {response.text}")
-```
-
-```js JavaScript theme={null}
-import fs from "fs";
-const body = {
-  model: "stabilityai/stable-diffusion-3.5-large",
-  positive_prompt:
-    "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
-  width: 1024,
-  height: 1024,
-  steps: 30,
-  cfg: 7.5,
-  seed: 42,
-};
-const res = await fetch(
-  "https://platform.qubrid.com/api/v1/qubridai/image/generation",
-  {
-    method: "POST",
-    headers: {
-      Authorization:
-        "Bearer <QUBRID_API_KEY>",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  }
-);
-if (!res.ok) {
-  const errText = await res.text();
-  throw new Error(`API Error ${res.status}: ${errText}`);
-}
-const buffer = Buffer.from(await res.arrayBuffer());
-fs.writeFileSync("generated_image.png", buffer);
-console.log("Image saved to generated_image.png");
-```
-
-```go Go theme={null}
-package main
-
-import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-)
-
-func main() {
-  url := "https://platform.qubrid.com/api/v1/qubridai/image/generation"
-  data := map[string]interface{}{
   "model": "stabilityai/stable-diffusion-3.5-large",
   "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
   "width": 1024,
   "height": 1024,
   "steps": 30,
   "cfg": 7.5,
-  "seed": 42,
+  "seed": 50,
+  "negative_prompt": "",
+  "response_format": "url"
 }
-  jsonData, _ := json.Marshal(data)
-  jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Fatal(err)
+
+# Send request
+response = requests.post(url, headers=headers, json=data)
+
+# Save the generated image
+if response.status_code == 200:
+    with open("generated_image.png", "wb") as f:
+        f.write(response.content)
+        print("Image saved to generated_image.png")
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+```
+
+```js JavaScript theme={null}
+const body = {
+  "model": "stabilityai/stable-diffusion-3.5-large",
+  "positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+  "width": 1024,
+  "height": 1024,
+  "steps": 30,
+  "cfg": 7.5,
+  "seed": 50,
+  "negative_prompt": "",
+  "response_format": "url"
+};
+
+const res = await fetch("https://platform.qubrid.com/v1/images/generations", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(body)
+});
+
+const result = await res.json();
+```
+
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/images/generations"
+
+	data := map[string]interface{}{
+		"model":           "stabilityai/stable-diffusion-3.5-large",
+		"positive_prompt": "cinematic shot of a lone astronaut standing on a desolate alien planet, glowing orange sunset sky, dust storms swirling, dramatic lighting, ultra-wide lens composition, movie still aesthetic, realistic space suit details, volumetric atmosphere, 8k sci-fi film scene",
+		"width":           1024,
+		"height":          1024,
+		"steps":           30,
+		"cfg":             7.5,
+		"seed":            50,
+		"negative_prompt": "",
+		"response_format": "url",
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set(
-		"Authorization",
-		"Bearer <QUBRID_API_KEY>",
-	)
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(res.Body)
-		log.Fatalf("API error %d: %s", res.StatusCode, body)
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
 	}
-	file, err := os.Create("generated_image.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	_, err = io.Copy(file, res.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Image saved to generated_image.png")
 }
-
-
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/image/generation" \
-  -H "Authorization: Bearer <QUBRID_API_KEY>" \
+curl -X POST "https://platform.qubrid.com/v1/images/generations" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
   "model": "stabilityai/stable-diffusion-3.5-large",
@@ -159,7 +139,9 @@ curl -X POST "https://platform.qubrid.com/api/v1/qubridai/image/generation" \
   "height": 1024,
   "steps": 30,
   "cfg": 7.5,
-  "seed": 42
+  "seed": 50,
+  "negative_prompt": "",
+  "response_format": "url"
 }'
 ```
 

@@ -22,200 +22,138 @@ You can choose the one that best fits your workflow.
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
-from pprint import pprint
+from openai import OpenAI
 
-url = "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
-headers = {
-    "Authorization": "Bearer <Qubrid_API_KEY>",
-    "Content-Type": "application/json",
-}
-data = {
-    "model": "mistralai/Mistral-7B-Instruct-v0.3",
-    "messages": [
-        {"role": "user", "content": "Explain quantum computing to a 5 year old."}
-    ],
-    "temperature": 0.7,
-    "max_tokens": 4096,
-    "stream": False,
-    "top_p": 0.8,
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data,
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
 )
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
 
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="mistralai/Mistral-7B-Instruct-v0.3",
+    messages=[
+      {
+        "role": "user",
+        "content": "Explain quantum computing in simple terms"
+      }
+    ],
+    max_tokens=4096,
+    temperature=0.7,
+    top_p=1,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
 ```
 
 ```js JavaScript theme={null}
-(async () => {
-  const body = {
-    model: "mistralai/Mistral-7B-Instruct-v0.3",
-    messages: [
-      {
-        role: "user",
-        content: "Explain quantum computing to a 5 year old.",
-      },
-    ],
-    temperature: 0.8,
-    max_tokens: 4096,
-    stream: false,
-    top_p: 0.8,
-  };
+import OpenAI from 'openai';
 
-  const res = await fetch(
-    "https://platform.qubrid.com/api/v1/qubridai/chat/completions",
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'mistralai/Mistral-7B-Instruct-v0.3',
+  messages: [
     {
-      method: "POST",
-      headers: {
-        Authorization:
-        "Bearer <Qubrid_API_KEY>",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+      "role": "user",
+      "content": "Explain quantum computing in simple terms"
     }
-  );
+  ],
+  max_tokens: 4096,
+  temperature: 0.7,
+  top_p: 1,
+  stream: true
+});
 
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const result = await res.json();
-    console.log(result);
-  } else {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.replace("data:", "").trim();
-        if (payload === "[DONE]") return;
-        try {
-          const chunk = JSON.parse(payload);
-          console.log(chunk);
-        } catch {
-          console.log("Raw chunk:", payload);
-        }
-      }
-    }
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
   }
-})();
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
 ```
 
 ```go Go theme={null}
 package main
 
 import (
-	"bytes"
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func main() {
-  url := "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
-  data := map[string]interface{}{
-  "model": "mistralai/Mistral-7B-Instruct-v0.3",
-  "messages": []map[string]string{
-    {
-      "role": "user",
-      "content": "Explain quantum computing in simple terms",
-    },
-  },
-  "temperature": 0.7,
-  "max_tokens": 4096,
-  "stream": false,
-  "top_p": 1,
-}
- jsonData, err := json.Marshal(data)
-    if err != nil {
-		panic(err)
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "mistralai/Mistral-7B-Instruct-v0.3",
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": "Explain quantum computing in simple terms",
+			},
+		},
+		"temperature": 0.7,
+		"max_tokens":  4096,
+		"stream":      true,
+		"top_p":       1,
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-  }
-	req.Header.Set("Authorization", "Bearer <QUBRID_API_KEY>")
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var result map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-			panic(err)
-		}
-		fmt.Printf("%+v\n", result)
-		return
-	}
+
 	scanner := bufio.NewScanner(res.Body)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !strings.HasPrefix(line, "data:") {
-			continue
+		if line != "" {
+			fmt.Println(line)
 		}
-		payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-		if payload == "[DONE]" {
-			break
-		}
-		var chunk map[string]interface{}
-		if err := json.Unmarshal([]byte(payload), &chunk); err != nil {
-			fmt.Println("Raw chunk:", payload)
-			continue
-		}
-		fmt.Printf("%+v\n", chunk)
-	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
 	}
 }
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
-  -H "Authorization: Bearer Qubrid_API_KEY" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
-  --data '{
+  -d '{
   "model": "mistralai/Mistral-7B-Instruct-v0.3",
   "messages": [
     {
       "role": "user",
-      "content": "Explain quantum computing to a 5 year old."
+      "content": "Explain quantum computing in simple terms"
     }
   ],
   "temperature": 0.7,
   "max_tokens": 4096,
-  "stream": false,
-  "top_p": 0.8
+  "stream": true,
+  "top_p": 1
 }'
 ```
 </CodeGroup>
