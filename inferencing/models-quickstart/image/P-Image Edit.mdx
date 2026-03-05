@@ -1,0 +1,294 @@
+---
+title: "P-Image Edit"
+description: "> A fast, affordable image editing model enabling precise text-guided modifications to existing images with high visual fidelity."
+---
+
+## About the Provider
+Pruna AI is an AI optimization company focused on making state-of-the-art image generation fast, affordable, and accessible. Their P-Image model family is designed to deliver professional-quality image generation and editing with sub-second inference speeds, strong prompt adherence, and support for fine-tuning and LoRA-based customization.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `p-image-edit` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `p-image-edit` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+import requests
+import json
+
+url = "https://platform.qubrid.com/v1/images/edits"
+headers = {
+    "Authorization": "Bearer QUBRID_API_KEY"
+}
+
+# ─────────────────────────────────────────
+# Option 1: File Upload (Multipart)
+# ─────────────────────────────────────────
+files = [
+    ('files', ('input.png', open('<YOUR-IMAGE-COMPLETE-PATH>', 'rb'), 'image/png'))
+]
+data = {
+  "model": "p-image-edit",
+  "prompt": "Add a rainbow over the mountains",
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": False,
+  "response_format": "url"
+}
+
+response = requests.post(url, headers=headers, data=data, files=files)
+print(response.json())
+
+# ─────────────────────────────────────────
+# Option 2: JSON with Image URLs
+# ─────────────────────────────────────────
+headers_json = {
+    "Authorization": "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+  "model": "p-image-edit",
+  "prompt": "Add a rainbow over the mountains",
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": False,
+  "response_format": "url"
+}
+payload["images"] = ["<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"]
+
+response = requests.post(url, headers=headers_json, json=payload)
+print(response.json())
+```
+
+```js JavaScript theme={null}
+// ─────────────────────────────────────────
+// Option 1: File Upload (Multipart)
+// ─────────────────────────────────────────
+const form = new FormData();
+form.append("model", "p-image-edit");
+form.append("prompt", "Add a rainbow over the mountains");
+form.append("aspect_ratio", "16:9");
+form.append("seed", "1");
+form.append("disable_safety_checker", "false");
+form.append("response_format", "url");
+form.append("files", fs.createReadStream("input.png"));
+
+const res1 = await fetch("https://platform.qubrid.com/v1/images/edits", {
+  method: "POST",
+  headers: { Authorization: "Bearer QUBRID_API_KEY" },
+  body: form
+});
+const result1 = await res1.json();
+console.log(result1);
+
+// ─────────────────────────────────────────
+// Option 2: JSON with Image URLs
+// ─────────────────────────────────────────
+const body = {
+  ...{
+  "model": "p-image-edit",
+  "prompt": "Add a rainbow over the mountains",
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": false,
+  "response_format": "url"
+},
+  images: ["<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"]
+};
+
+const res2 = await fetch("https://platform.qubrid.com/v1/images/edits", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer QUBRID_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(body)
+});
+const result2 = await res2.json();
+console.log(result2);
+```
+
+```go Go theme={null}
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"os"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/images/edits"
+
+	// ─────────────────────────────────────────
+	// Option 1: File Upload (Multipart)
+	// ─────────────────────────────────────────
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	writer.WriteField("model", "p-image-edit")
+	writer.WriteField("prompt", "Add a rainbow over the mountains")
+	writer.WriteField("aspect_ratio", "16:9")
+	writer.WriteField("seed", "1")
+	writer.WriteField("disable_safety_checker", "false")
+	writer.WriteField("response_format", "url")
+
+	file, _ := os.Open("<YOUR-IMAGE-COMPLETE-PATH>")
+	defer file.Close()
+	part, _ := writer.CreateFormFile("files", "input.png")
+	io.Copy(part, file)
+
+	writer.Close()
+
+	req, _ := http.NewRequest("POST", url, body)
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+	fmt.Println(res.Status)
+
+	// ─────────────────────────────────────────
+	// Option 2: JSON with Image URLs
+	// ─────────────────────────────────────────
+	type ImageEditRequest struct {
+		Model  string   `json:"model"`
+		Prompt string   `json:"prompt"`
+		Images []string `json:"images"`
+	}
+
+	jsonPayload := ImageEditRequest{
+		Model:  "p-image-edit",
+		Prompt: "Add a rainbow over the mountains",
+		Images: []string{"<YOUR-IMAGE-URL-1>", "<YOUR-IMAGE-URL-2>"},
+	}
+
+	jsonData, _ := json.Marshal(jsonPayload)
+	req2, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req2.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req2.Header.Set("Content-Type", "application/json")
+
+	res2, _ := client.Do(req2)
+	defer res2.Body.Close()
+	fmt.Println(res2.Status)
+}
+```
+
+```curl cURL theme={null}
+# Option 1: File Upload (Multipart)
+curl -X POST "https://platform.qubrid.com/v1/images/edits" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -F "model=p-image-edit" \
+  -F "prompt=Add a rainbow over the mountains" \
+  -F "aspect_ratio=16:9" \
+  -F "seed=1" \
+  -F "disable_safety_checker=false" \
+  -F "response_format=url" \
+  -F "files=@<YOUR-IMAGE-COMPLETE-PATH>"
+
+# Option 2: JSON with Image URLs
+curl -X POST "https://platform.qubrid.com/v1/images/edits" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "p-image-edit",
+  "prompt": "Add a rainbow over the mountains",
+  "aspect_ratio": "16:9",
+  "seed": 1,
+  "disable_safety_checker": false,
+  "response_format": "url",
+  "images": [
+    "<YOUR-IMAGE-URL-1>",
+    "<YOUR-IMAGE-URL-2>"
+  ]
+}'
+```
+</CodeGroup>
+
+### API Generated Response
+
+- Input Image
+<Frame>
+  <img src="/images/p-image-edit-input.png" />
+</Frame>
+
+> Edit Prompt: Add a rainbow over the mountains
+
+- Output Image
+<Frame>
+  <img src="/images/p-image-edit-output.png" />
+</Frame>
+
+
+## Model Overview
+
+**P-Image Edit** is an image editing variant of the P-Image model developed by Pruna AI, designed for precise text-guided modifications to existing images.  
+- It accepts both file uploads and image URLs as input, providing flexibility for different integration workflows.  
+- The model supports text-guided edits while preserving the overall visual structure and fidelity of the original image.  
+- P-Image Edit is suitable for production workflows requiring fast, scalable, and high-quality image editing capabilities.
+
+---
+
+## Model at a Glance
+
+| Feature            | Details                                                              |
+|--------------------|----------------------------------------------------------------------|
+| Model ID           | p-image-edit                                                         |
+| Provider           | Pruna AI                                                             |
+| Model Type         | Text-Guided Image Editing                                            |
+| Architecture       | Optimized latent diffusion model with image conditioning             |
+| Input Type         | Image file upload or image URL                                       |
+| Output Type        | Edited image based on text prompt                                    |
+
+## When to use?
+
+You should consider using **P-Image Edit** if:
+
+- You need text-guided editing of existing images with high visual fidelity
+- Your application requires flexible input support via file upload or image URLs
+- You want fast, scalable image editing without full model retraining
+- You need precise prompt-driven modifications while preserving the original image structure
+
+---
+
+## Inference Parameters
+
+| Parameter Name         | Type    | Default | Description                                                    |
+|------------------------|---------|---------|----------------------------------------------------------------|
+| Prompt                 | string  | —       | Text instruction describing the desired edit.                  |
+| Aspect Ratio           | string  | 16:9    | Output image aspect ratio.                                     |
+| Seed                   | number  | 1       | Random seed for reproducibility.                               |
+| Disable Safety Checker | boolean | false   | Disables the built-in safety filter if enabled.                |
+| Response Format        | string  | url     | Format of the response — `url` or `b64_json`.                  |
+
+## Key Features
+
+- **Text-Guided Image Editing**: Performs precise modifications to existing images based on natural language instructions while preserving visual fidelity.
+- **Flexible Input Support**: Accepts both multipart file uploads and JSON-based image URLs for seamless integration into diverse workflows.
+- **High Visual Fidelity**: Maintains the structural integrity and visual quality of the original image during the editing process.
+- **Sub-Second Inference**: Delivers fast image editing results optimized for production-scale workloads.
+- **Safety Controls**: Built-in safety checker with optional override for appropriate use cases.
+
+---
+
+## Summary
+
+**P-Image Edit** is a fast, precise text-guided image editing model built by Pruna AI for production-scale workflows.  
+- It supports both file upload and URL-based image inputs for flexible integration.  
+- The model performs accurate prompt-driven edits while maintaining the visual structure of the original image.  
+- It is suitable for developers and enterprises requiring scalable, high-quality image editing capabilities.

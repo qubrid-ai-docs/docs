@@ -27,116 +27,73 @@ You can choose the one that best fits your workflow.
 
 <CodeGroup>
   ```python Python theme={null}
-import requests
-import json
-from pprint import pprint
+from openai import OpenAI
 
-url = "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
-headers = {
-  "Authorization": "Bearer <Qubrid_API_KEY>",
-  "Content-Type": "application/json"
-}
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
 
-data = {
-  "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-  "messages": [
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    messages=[
+      {
+        "role": "user",
+        "content": "Write a Python function to calculate fibonacci sequence"
+      }
+    ],
+    max_tokens=65536,
+    temperature=0.7,
+    top_p=0.8,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3-Coder-30B-A3B-Instruct',
+  messages: [
     {
       "role": "user",
       "content": "Write a Python function to calculate fibonacci sequence"
     }
   ],
-  "temperature": 0.7,
-  "max_tokens": 4096,
-  "stream": False
-}
-response = requests.post(
-    url,
-    headers=headers,
-    json=data, 
-)
-content_type = response.headers.get("Content-Type", "")
-if "application/json" in content_type:
-    pprint(response.json())
-else:
-    for line in response.iter_lines(decode_unicode=True):
-        if not line:
-            continue
+  max_tokens: 65536,
+  temperature: 0.7,
+  top_p: 0.8,
+  stream: true
+});
 
-        if line.startswith("data:"):
-            payload = line.replace("data:", "").strip()
-
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-                pprint(chunk)
-            except json.JSONDecodeError:
-                print("Raw chunk:", payload)
-```
-
-```js JavaScript theme={null}
-(async () => {
-  const body = {
-    model: "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are an expert software engineer. Write clean, efficient, and well-documented code.",
-      },
-      {
-        role: "user",
-        content:
-          "Write a Python function to calculate the Fibonacci sequence using dynamic programming.",
-      },
-    ],
-    temperature: 0.2,
-    max_tokens: 4096,
-    stream: false,
-    top_p: 0.95,
-  };
-
-  const res = await fetch(
-    "https://platform.qubrid.com/api/v1/qubridai/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Bearer <QUBRID_API_KEY>",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    }
-  );
-
-  const contentType = res.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    const result = await res.json();
-    console.log(result);
-  } else {
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.replace("data:", "").trim();
-        if (payload === "[DONE]") return;
-        try {
-          const chunk = JSON.parse(payload);
-          console.log(chunk);
-        } catch {
-          console.log("Raw chunk:", payload);
-        }
-      }
-    }
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
   }
-})();
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
 ```
 
 ```go Go theme={null}
@@ -148,125 +105,108 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 func main() {
-  url := "https://platform.qubrid.com/api/v1/qubridai/chat/completions"
+	url := "https://platform.qubrid.com/v1/chat/completions"
 
-  data := map[string]interface{}{
-    "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-    "messages": []map[string]string{
-      {
-        "role": "system",
-        "content": "You are an expert software engineer. Write clean, efficient, and well-documented code.",
-      },
-      {
-        "role": "user",
-        "content": "Write a Python function to calculate the Fibonacci sequence using dynamic programming.",
-      },
-    },
-    "temperature": 0.2,
-    "max_tokens": 4096,
-    "stream": false,
-    "top_p": 0.95,
-  }
-  jsonData, err := json.Marshal(data)
-    if err != nil {
-		panic(err)
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":       4096,
+		"temperature":      0.7,
+		"stream":           true,
+		"top_p":            0.9,
+		"presence_penalty": 0,
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer <QUBRID_API_KEY>")
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
+	res, _ := client.Do(req)
 	defer res.Body.Close()
-	contentType := res.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var result map[string]interface{}
-		if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-			panic(err)
-		}
-		fmt.Printf("%+v\n", result)
-		return
-	}
+
 	scanner := bufio.NewScanner(res.Body)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !strings.HasPrefix(line, "data:") {
-			continue
+		if line != "" {
+			fmt.Println(line)
 		}
-		payload := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
-		if payload == "[DONE]" {
-			break
-		}
-		var chunk map[string]interface{}
-		if err := json.Unmarshal([]byte(payload), &chunk); err != nil {
-			fmt.Println("Raw chunk:", payload)
-			continue
-		}
-		fmt.Printf("%+v\n", chunk)
-	}
-	if err := scanner.Err(); err != nil {
-		panic(err)
 	}
 }
-
 ```
 
 ```curl cURL theme={null}
-curl -X POST "https://platform.qubrid.com/api/v1/qubridai/chat/completions" \
-  -H "Authorization: Bearer Qubrid_API_KEY" \
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
   -H "Content-Type: application/json" \
-  --data '{
+  -d '{
   "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
   "messages": [
     {
-      "role": "system",
-      "content": "You are an expert software engineer. Write clean, efficient, and well-documented code."
-    },
-    {
       "role": "user",
-      "content": "Write a Python function to calculate the Fibonacci sequence using dynamic programming."
+      "content": "Write a Python function to calculate fibonacci sequence"
     }
   ],
-  "temperature": 0.2,
-  "max_tokens": 4096,
-  "stream": false,
-  "top_p": 0.95
+  "temperature": 0.7,
+  "max_tokens": 65536,
+  "stream": true,
+  "top_p": 0.8
 }'
 ```
 
 </CodeGroup>
 
 This will produce a response similar to the one below:
+```plain theme={null}
+Here are several Python implementations of the Fibonacci sequence calculation:
 
-```json theme={null}
-{
-    "content": "```python\ndef fibonacci_dp(n):\n    \"\"\"\n    Calculate the nth Fibonacci number using dynamic programming.\n    \n    The Fibonacci sequence is defined as:\n  F(0) = 0, F(1) = 1, and F(n) = F(n-1) + F(n-2) for n > 1\n    \n    This implementation uses dynamic programming with O(n) time complexity\n    and O(1) space complexity by storing only the last two values.\n  \n  Args:\n   n (int): The position in the Fibonacci sequence (non-negative integer)\n  \n   Returns:\n        int: The nth Fibonacci number\n        \n    Raises:\n        ValueError: If n is negative\n    \n    Examples:\n    >>> fibonacci_dp(0)\n        0\n        >>> fibonacci_dp(1)\n        1\n        >>> fibonacci_dp(5)\n    5\n   >>> fibonacci_dp(10)\n        55\n    \"\"\"\n    # Input validation\n    if n < 0:\n    raise ValueError(\"n must be a non-negative integer\")\n    \n    # Base cases\n    if n == 0:\n        return 0\n    elif n == 1:\n     return 1\n    \n    # Dynamic programming approach\n    # Only store the last two Fibonacci numbers\n    prev_prev = 0  # F(i-2)\n    prev = 1       # F(i-1)\n    \n    # Calculate from F(2) to F(n)\n    for i in range(2, n + 1):\n        current = prev_prev + prev\n        prev_prev = prev\n        prev = current\n  \n return prev\n\n\ndef fibonacci_sequence_dp(n):\n    \"\"\"\n    Generate the first n+1 Fibonacci numbers using dynamic programming.\n    \n    Args:\n        n (int): The upper index of the sequence (non-negative integer)\n  \n    Returns:\n        list: A list containing the first n+1 Fibonacci numbers\n        \n    Examples:\n   >>> fibonacci_sequence_dp(5)\n        [0, 1, 1, 2, 3, 5]\n        >>> fibonacci_sequence_dp(0)\n        [0]\n    \"\"\"\n    if n < 0:\n        raise ValueError(\"n must be a non-negative integer\")\n    \n    if n == 0:\n        return [0]\n    \n    # Initialize the sequence\n    fib_sequence = [0] * (n + 1)\n    fib_sequence[0] = 0\n    \n    if n >= 1:\n        fib_sequence[1] = 1\n    \n    # Fill the sequence using dynamic programming\n    for i in range(2, n + 1):\n        fib_sequence[i] = fib_sequence[i-1] + fib_sequence[i-2]\n    \n    return fib_sequence\n\n\n# Alternative implementation with memoization\ndef fibonacci_memo(n, memo=None):\n    \"\"\"\n    Calculate the nth Fibonacci number using memoization (top-down DP).\n    \n    Args:\n        n (int): The position in the Fibonacci sequence\n  memo (dict): Memoization dictionary (optional)\n        \n    Returns:\n int: The nth Fibonacci number\n    \"\"\"\n    if memo is None:\n        memo = {}\n    \n    if n < 0:\n        raise ValueError(\"n must be a non-negative integer\")\n    \n    if n in memo:\n        return memo[n]\n    \n    if n == 0:\n        return 0\n    elif n == 1:\n  return 1\n    \n    memo[n] = fibonacci_memo(n-1, memo) + fibonacci_memo(n-2, memo)\n    return memo[n]\n\n\n# Example usage and testing\nif __name__ == \"__main__\":\n    # Test the basic function\n    print(\"Fibonacci numbers:\")\n    for i in range(11):\n  print(f\"F({i}) = {fibonacci_dp(i)}\")\n    \n    print(\"\\nFirst 10 Fibonacci numbers as a sequence:\")\n    print(fibonacci_sequence_dp(9))\n    \n    # Performance comparison example\n    import time\n    \n    n = 35\n    \n    # Dynamic programming approach\n    start_time = time.time()\n    result_dp = fibonacci_dp(n)\n    dp_time = time.time() - start_time\n    \n    # Memoization approach\n    start_time = time.time()\n    result_memo = fibonacci_memo(n)\n    memo_time = time.time() - start_time\n    \n    print(f\"\\nPerformance comparison for F({n}):\")\n    print(f\"Dynamic Programming: {result_dp} (Time: {dp_time:.6f}s)\")\n    print(f\"Memoization: {result_memo} (Time: {memo_time:.6f}s)\")\n```\n\nThis implementation provides:\n\n1. **Main Function (`fibonacci_dp`)**: \n   - Uses bottom-up dynamic programming\n   - Time complexity: O(n), Space complexity: O(1)\n   - Efficient for calculating single Fibonacci numbers\n\n2. **Sequence Generator (`fibonacci_sequence_dp`)**:\n  - Returns the entire sequence up to index n\n   - Useful when you need multiple Fibonacci numbers\n\n3. **Alternative Implementation (`fibonacci_memo`)**:\n   - Top-down approach with memoization\n   - Good for understanding different DP approaches\n\nKey features:\n- **Input validation** with clear error messages\n- **Comprehensive documentation** with docstrings and examples\n- **Edge case handling** (n=0, n=1)\n- **Efficient space usage** in the main implementation\n- **Well-tested examples** and performance comparison\n\nThe dynamic programming approach avoids the exponential time complexity of naive recursion by storing previously computed values and building up the solution iteratively.",
-    "metrics": {
-        "input_tokens": 44,
-        "output_tokens": 534,
-        "total_time": 9.0186,
-        "tps": 59.2118
-    },
-    "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
-    "usage": {
-        "completion_tokens": 1065,
-        "prompt_tokens": 44,
-        "prompt_tokens_details": null,
-        "total_tokens": 1109
-    }
-}
+## 1. Basic Recursive Approach (Simple but Inefficient)
+
+def fibonacci_recursive(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fibonacci_recursive(n-1) + fibonacci_recursive(n-2)
+
+## 2. Iterative Approach (Efficient)
+
+def fibonacci_iterative(n):
+    if n <= 0:
+        return 0
+    elif n == 1:
+        return 1
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
+
+## Recommended Approach:
+For most practical purposes, use the iterative approach because it's:
+- Fast (O(n) time complexity)
+- Memory efficient (O(1) space complexity)
+- Easy to understand and implement
 ```
 
 ## Model Overview

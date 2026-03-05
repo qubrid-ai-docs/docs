@@ -1,0 +1,275 @@
+---
+title: "Qwen3.5 122B A10B"
+description: "> The most powerful model in the Qwen3.5 Medium Series — 122B total parameters with 10B active, delivering frontier-level vision, reasoning, and function-calling performance."
+---
+
+## About the Provider
+Alibaba Cloud is the cloud computing arm of Alibaba Group and the creator of the Qwen model family. Through its open-source initiative, Alibaba has released state-of-the-art language and multimodal models under permissive licenses, enabling developers and enterprises to build powerful AI applications across diverse domains and languages.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `Qwen/Qwen3.5-122B-A10B` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `Qwen/Qwen3.5-122B-A10B` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3.5-122B-A10B",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=16384,
+    temperature=1,
+    top_p=0.95,
+    stream=True,
+    presence_penalty=1.5
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3.5-122B-A10B',
+  messages: [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  max_tokens: 16384,
+  temperature: 1,
+  top_p: 0.95,
+  stream: true,
+  presence_penalty: 1.5
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3.5-122B-A10B",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":       16384,
+		"temperature":      1,
+		"stream":           true,
+		"top_p":            0.95,
+		"presence_penalty": 1.5,
+		"enable_thinking":  true,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Qwen/Qwen3.5-122B-A10B",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 16384,
+  "temperature": 1,
+  "stream": true,
+  "top_p": 0.95,
+  "presence_penalty": 1.5,
+  "enable_thinking": true
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**Qwen3.5-122B-A10B** is the most powerful open-source model in the Qwen3.5 Medium Series.
+- With 122B total parameters and 10B active per token across a 48-layer hybrid architecture, it delivers the strongest knowledge, vision, and function-calling performance in the medium class.
+- It scores 86.6% on GPQA Diamond (beating GPT-5 mini's 82.8%), 72.2% on BFCL-V4 tool calling (vs GPT-5 mini's 55.5%), 92.1% on OCRBench, and 83.9% on MMMU.
+- Supports text, image, and video input natively via early fusion.
+
+---
+
+## Model at a Glance
+
+| Feature        | Details                                                                                                                                                     |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Model ID       | `Qwen/Qwen3.5-122B-A10B`                                                                                                                                    |
+| Provider       | Alibaba Cloud (Qwen Team)                                                                                                                                   |
+| Architecture   | Hybrid Gated DeltaNet + Sparse MoE Transformer — 48 layers, 16 DeltaNet-attention cycles (3:1 ratio), 256 experts (10B active per token), early fusion multimodal vision encoder, MTP speculative decoding |
+| Model Size     | 122B Total / 10B Active                                                                                                                                     |
+| Context Length | 256K Tokens (up to 1M)                                                                                                                                      |
+| Release Date   | February 24, 2026                                                                                                                                           |
+| License        | Apache 2.0                                                                                                                                                  |
+| Training Data  | Trillions of multimodal tokens (text, image, video) across 201 languages; RL post-training for reasoning and agentic tasks                                  |
+
+## When to use?
+
+You should consider using **Qwen3.5-122B-A10B** if:
+
+- You need advanced multimodal reasoning across text, image, and video
+- Your application requires enterprise-grade document understanding and OCR
+- You are building complex agentic workflows with function calling
+- You need long-horizon planning and analysis with 256K context
+- Your use case involves GUI automation
+- You need scientific and research-grade problem solving
+- Your application requires RAG over massive document repositories
+
+---
+
+## Inference Parameters
+
+| Parameter Name   | Type    | Default | Description                                                                                      |
+|------------------|---------|---------|--------------------------------------------------------------------------------------------------|
+| Streaming        | boolean | true    | Enable streaming responses for real-time output.                                                 |
+| Temperature      | number  | 1       | Recommended 1.0 for thinking mode. Use 0.6–0.7 for non-thinking tasks.                          |
+| Max Tokens       | number  | 16384   | Maximum tokens to generate. Thinking mode may require higher values.                             |
+| Top P            | number  | 0.95    | Nucleus sampling parameter.                                                                      |
+| Top K            | number  | 20      | Limits token sampling to top-k candidates.                                                       |
+| Presence Penalty | number  | 1.5     | Reduces repetition in longer outputs. Recommended 1.5 for this model.                           |
+| Enable Thinking  | boolean | true    | Toggle chain-of-thought reasoning. Enables deep problem solving at the cost of higher latency.   |
+
+## Key Features
+
+- **86.6% GPQA Diamond**: Beats GPT-5 mini (82.8%) by 4 points on graduate-level reasoning.
+- **72.2% BFCL-V4 Function Calling**: 30% ahead of GPT-5 mini (55.5%) on tool calling benchmarks.
+- **92.1% OCRBench**: Best open-weight document model with 89.8% OmniDocBench.
+- **70.4% ScreenSpot Pro**: 2× Claude Sonnet 4.5 (36.2%) on GUI automation tasks.
+- **Native Multimodal**: Text, image, and video via early fusion — no separate vision encoder.
+- **MTP Speculative Decoding**: Enhanced throughput via Multi-Token Prediction.
+- **Apache 2.0 License**: Full commercial freedom with open weights.
+
+---
+
+## Summary
+
+**Qwen3.5-122B-A10B** is the most powerful model in the Qwen3.5 Medium Series for vision, reasoning, and tool calling.
+- It uses a 48-layer hybrid Gated DeltaNet + Sparse MoE architecture with 122B total and 10B active parameters.
+- It outperforms GPT-5 mini on GPQA Diamond, BFCL-V4, and GUI automation benchmarks.
+- The model supports 256K native context, configurable thinking mode, and 201 languages.
+- Licensed under Apache 2.0 for full commercial use.

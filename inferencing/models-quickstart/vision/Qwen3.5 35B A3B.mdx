@@ -1,0 +1,270 @@
+---
+title: "Qwen3.5 35B A3B"
+description: "> The breakout model of the Qwen3.5 Medium Series — 35B total parameters with only 3B active, delivering historic efficiency with frontier-level vision and reasoning on an 8GB GPU."
+---
+
+## About the Provider
+Alibaba Cloud is the cloud computing arm of Alibaba Group and the creator of the Qwen model family. Through its open-source initiative, Alibaba has released state-of-the-art language and multimodal models under permissive licenses, enabling developers and enterprises to build powerful AI applications across diverse domains and languages.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `Qwen/Qwen3.5-35B-A3B` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `Qwen/Qwen3.5-35B-A3B` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3.5-35B-A3B",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=8192,
+    temperature=0.6,
+    top_p=0.95,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3.5-35B-A3B',
+  messages: [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  max_tokens: 8192,
+  temperature: 0.6,
+  top_p: 0.95,
+  stream: true
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3.5-35B-A3B",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":      8192,
+		"temperature":     0.6,
+		"stream":          true,
+		"top_p":           0.95,
+		"enable_thinking": false,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Qwen/Qwen3.5-35B-A3B",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 8192,
+  "temperature": 0.6,
+  "stream": true,
+  "top_p": 0.95,
+  "enable_thinking": false
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**Qwen3.5-35B-A3B** is the breakout model of the Qwen3.5 Medium Series and the biggest efficiency breakthrough in recent open-source AI.
+- With 35B total parameters and only 3B active per token (8.6% of total) across a 60-layer hybrid architecture, it delivers frontier-level knowledge and visual reasoning at a fraction of the compute cost.
+- It outperforms the previous generation's Qwen3-235B-A22B on most benchmarks, as well as GPT-5 mini and Claude Sonnet 4.5 on knowledge (MMMLU) and visual reasoning (MMMU-Pro).
+- Runs on an 8GB GPU (4-bit quantization) or a 22GB Mac M-series, and supports text, image, and video input natively via early fusion.
+
+---
+
+## Model at a Glance
+
+| Feature        | Details                                                                                                                                                     |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Model ID       | `Qwen/Qwen3.5-35B-A3B`                                                                                                                                      |
+| Provider       | Alibaba Cloud (Qwen Team)                                                                                                                                   |
+| Architecture   | Hybrid Gated DeltaNet + Sparse MoE Transformer — 60 layers, 3:1 linear-to-full attention ratio, 256 experts (8 routed + 1 shared per token), early fusion multimodal vision encoder, MTP speculative decoding |
+| Model Size     | 35B Total / 3B Active                                                                                                                                       |
+| Context Length | 256K Tokens (up to 1M)                                                                                                                                      |
+| Release Date   | February 24, 2026                                                                                                                                           |
+| License        | Apache 2.0                                                                                                                                                  |
+| Training Data  | Trillions of multimodal tokens (text, image, video) across 201 languages; RL post-training scaled across million-agent environments                         |
+
+## When to use?
+
+You should consider using **Qwen3.5-35B-A3B** if:
+
+- You need a powerful vision-language model deployable on consumer or edge hardware
+- Your application requires cost-efficient enterprise inference at scale
+- You are building agentic coding and tool-calling workflows on a budget
+- You need long-context document analysis with 256K native context
+- Your use case involves multimodal chat across text, image, and video
+- You need complex reasoning with optional thinking mode
+- You want a fully open-source model (Apache 2.0) with near-lossless 4-bit quantization
+
+---
+
+## Inference Parameters
+
+| Parameter Name  | Type    | Default | Description                                                                             |
+|-----------------|---------|---------|-----------------------------------------------------------------------------------------|
+| Streaming       | boolean | true    | Enable streaming responses for real-time output.                                        |
+| Temperature     | number  | 0.6     | Use 0.6 for non-thinking mode, 1.0 for thinking/reasoning mode.                        |
+| Max Tokens      | number  | 8192    | Maximum number of tokens to generate.                                                   |
+| Top P           | number  | 0.95    | Nucleus sampling parameter.                                                             |
+| Top K           | number  | 20      | Limits token sampling to top-k candidates.                                              |
+| Enable Thinking | boolean | false   | Toggle chain-of-thought reasoning. Set temperature=1.0 when enabled. Increases latency. |
+
+## Key Features
+
+- **Historic Efficiency**: Beats Qwen3-235B-A22B with only 3B active parameters — 8.6% of total params per token.
+- **Outperforms GPT-5 mini & Claude Sonnet 4.5**: Higher scores on MMMLU (knowledge) and MMMU-Pro (visual reasoning).
+- **8GB GPU Deployment**: Runs on consumer hardware via near-lossless 4-bit quantization; also supports 22GB Mac M-series.
+- **256K Native Context**: Supports up to 1M tokens with extended configuration.
+- **Native Multimodal**: Text, image, and video via early fusion — no separate vision encoder.
+- **MTP Speculative Decoding**: Enhanced throughput via Multi-Token Prediction.
+- **Apache 2.0 License**: Fully open source with full commercial freedom.
+
+---
+
+## Summary
+
+**Qwen3.5-35B-A3B** is the efficiency breakthrough of the Qwen3.5 Medium Series, delivering frontier-level performance at a fraction of the compute cost.
+- It uses a 60-layer hybrid Gated DeltaNet + Sparse MoE architecture with 35B total and only 3B active parameters per token.
+- It outperforms Qwen3-235B-A22B, GPT-5 mini, and Claude Sonnet 4.5 on key knowledge and visual reasoning benchmarks.
+- The model supports 256K native context, optional thinking mode, and 201 languages.
+- Licensed under Apache 2.0 for full commercial use, deployable on an 8GB GPU.
