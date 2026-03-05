@@ -1,0 +1,270 @@
+---
+title: "Qwen3.5 397B A17B"
+description: "> Alibaba's flagship open-source native multimodal model — trained from scratch on text, image, and video with 397B total parameters and 17B active per token."
+---
+
+## About the Provider
+Alibaba Cloud is the cloud computing arm of Alibaba Group and the creator of the Qwen model family. Through its open-source initiative, Alibaba has released state-of-the-art language and multimodal models under permissive licenses, enabling developers and enterprises to build powerful AI applications across diverse domains and languages.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `Qwen/Qwen3.5-397B-A17B` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `Qwen/Qwen3.5-397B-A17B` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3.5-397B-A17B",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=16384,
+    temperature=0.6,
+    top_p=0.95,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3.5-397B-A17B',
+  messages: [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  max_tokens: 16384,
+  temperature: 0.6,
+  top_p: 0.95,
+  stream: true
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3.5-397B-A17B",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":      16384,
+		"temperature":     0.6,
+		"stream":          true,
+		"top_p":           0.95,
+		"enable_thinking": false,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Qwen/Qwen3.5-397B-A17B",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 16384,
+  "temperature": 0.6,
+  "stream": true,
+  "top_p": 0.95,
+  "enable_thinking": false
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**Qwen3.5-397B-A17B** is Alibaba's flagship open-source model and the first in the Qwen3.5 series, released February 16, 2026.  
+- It is a native multimodal model trained from scratch on trillions of text, image, and video tokens using early fusion across 201 languages.  
+- With 397B total parameters and 17B active per token, it outperforms all Qwen3-VL models on vision tasks while matching or exceeding text-only frontiers.  
+- The hosted version is called Qwen3.5-Plus, supporting up to 1M token context.
+
+---
+
+## Model at a Glance
+
+| Feature         | Details                                                                                                                                          |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| Model ID        | `Qwen/Qwen3.5-397B-A17B`                                                                                                                         |
+| Provider        | Alibaba Cloud (Qwen Team)                                                                                                                        |
+| Architecture    | Hybrid Gated DeltaNet + Sparse MoE Transformer — 60 layers (15 cycles of 3× DeltaNet + 1× Gated Attention), hidden size 4096, 248,320 vocab size |
+| Model Size      | 397B Total / 17B Active                                                                                                                          |
+| Context Length  | 256K Tokens (up to 1M via Qwen3.5-Plus API)                                                                                                      |
+| Release Date    | February 16, 2026                                                                                                                                |
+| License         | Apache 2.0                                                                                                                                       |
+| Training Data   | Trillions of multimodal tokens (text, image, video) across 201 languages and dialects; large-scale RL post-training across million-agent environments |
+
+## When to use?
+
+You should consider using **Qwen3.5-397B-A17B** if:
+
+- You need native multimodal reasoning across text, image, and video
+- Your application requires frontier-level agentic workflows and multi-tool orchestration
+- You are working on long-horizon code generation and system design
+- You need scientific research and mathematical problem solving
+- Your use case involves complex document understanding and RAG
+- You need GUI and web automation
+- Your application requires multilingual support across 201 languages
+
+---
+
+## Inference Parameters
+
+| Parameter Name  | Type    | Default | Description                                                                         |
+|-----------------|---------|---------|-------------------------------------------------------------------------------------|
+| Streaming       | boolean | true    | Enable streaming responses for real-time output.                                    |
+| Temperature     | number  | 0.6     | Use 0.6 for non-thinking tasks, 1.0 for thinking/reasoning tasks.                  |
+| Max Tokens      | number  | 16384   | Maximum tokens to generate. Use higher values for thinking mode.                    |
+| Top P           | number  | 0.95    | Nucleus sampling parameter.                                                         |
+| Top K           | number  | 20      | Limits token sampling to top-k candidates.                                          |
+| Enable Thinking | boolean | false   | Toggle chain-of-thought reasoning mode. Set temperature=1.0 when enabled.           |
+
+## Key Features
+
+- **Native Multimodal**: First open-source model trained from scratch with early fusion of text, image, and video — no separate vision encoder.
+- **Frontier Intelligence at Efficient Cost**: 397B total / 17B active parameters via Sparse MoE for frontier-level performance at efficient compute.
+- **256K Native Context**: Supports up to 256K tokens natively, extendable to 1M via the hosted Qwen3.5-Plus API.
+- **Thinking Mode**: Configurable chain-of-thought reasoning with `enable_thinking=true` for complex multi-step tasks.
+- **Multi-Token Prediction (MTP)**: Enhanced throughput via MTP for faster inference.
+- **201 Language Support**: Trained on 201 languages and dialects for broad multilingual coverage.
+- **Apache 2.0 License**: Full commercial freedom with open weights.
+
+---
+
+## Summary
+
+**Qwen3.5-397B-A17B** is Alibaba's flagship open-source native multimodal model built for frontier-level intelligence across text, image, and video.  
+- It uses a hybrid Gated DeltaNet + Sparse MoE architecture with 397B total and 17B active parameters.  
+- The model supports 256K native context, configurable thinking mode, and 201 languages.  
+- It achieves 87.8% on MMLU-Pro and outperforms all Qwen3-VL models on vision tasks.  
+- Licensed under Apache 2.0 for full commercial use.

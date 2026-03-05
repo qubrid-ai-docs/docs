@@ -1,0 +1,268 @@
+---
+title: "Qwen3.5 27B"
+description: "> The only dense model in the Qwen3.5 Medium Series — 27B full-weight parameters, matching GPT-5 mini on SWE-bench Verified with native multimodal support and 1M token context."
+---
+
+## About the Provider
+Alibaba Cloud is the cloud computing arm of Alibaba Group and the creator of the Qwen model family. Through its open-source initiative, Alibaba has released state-of-the-art language and multimodal models under permissive licenses, enabling developers and enterprises to build powerful AI applications across diverse domains and languages.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `Qwen/Qwen3.5-27B` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `Qwen/Qwen3.5-27B` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3.5-27B",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=8192,
+    temperature=0.6,
+    top_p=0.95,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3.5-27B',
+  messages: [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  max_tokens: 8192,
+  temperature: 0.6,
+  top_p: 0.95,
+  stream: true
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3.5-27B",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":      8192,
+		"temperature":     0.6,
+		"stream":          true,
+		"top_p":           0.95,
+		"enable_thinking": false,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Qwen/Qwen3.5-27B",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 8192,
+  "temperature": 0.6,
+  "stream": true,
+  "top_p": 0.95,
+  "enable_thinking": false
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**Qwen3.5-27B** is a dense (non-MoE) transformer model and the only full-weight model in the Qwen3.5 Medium Series.
+- Released February 24, 2026, it achieves 72.4% on SWE-bench Verified — matching GPT-5 mini — despite having just 27B parameters.
+- It supports native multimodal input (text + images + video) via early fusion, runs on a 22GB Mac M-series device, and natively extends to 1M token contexts.
+
+---
+
+## Model at a Glance
+
+| Feature        | Details                                                                                                                        |
+|----------------|--------------------------------------------------------------------------------------------------------------------------------|
+| Model ID       | `Qwen/Qwen3.5-27B`                                                                                                             |
+| Provider       | Alibaba Cloud (Qwen Team)                                                                                                      |
+| Architecture   | Dense Transformer with Gated DeltaNet hybrid attention (linear + full attention, 3:1 ratio), early fusion multimodal vision encoder |
+| Model Size     | 27B (dense)                                                                                                                    |
+| Context Length | 256K Tokens (up to 1M)                                                                                                         |
+| Release Date   | February 24, 2026                                                                                                              |
+| License        | Apache 2.0                                                                                                                     |
+| Training Data  | Trillions of multimodal tokens (text, image, video) across 201 languages; RL post-training for reasoning and agentic tasks     |
+
+## When to use?
+
+You should consider using **Qwen3.5-27B** if:
+
+- You need local deployment on consumer hardware (22GB+ RAM)
+- Your application involves agentic coding and software development
+- Your use case requires multimodal chat across text, images, and video
+- You need complex reasoning and analysis without MoE routing complexity
+- Your workflow involves long-context document processing
+- You want to fine-tune a dense model for specialized domains
+
+---
+
+## Inference Parameters
+
+| Parameter Name  | Type    | Default | Description                                                                              |
+|-----------------|---------|---------|------------------------------------------------------------------------------------------|
+| Streaming       | boolean | true    | Enable streaming responses for real-time output.                                         |
+| Temperature     | number  | 0.6     | Use 0.6 for non-thinking tasks, 1.0 for thinking/reasoning tasks.                       |
+| Max Tokens      | number  | 8192    | Maximum number of tokens to generate.                                                    |
+| Top P           | number  | 0.95    | Nucleus sampling parameter.                                                              |
+| Top K           | number  | 20      | Limits token sampling to top-k candidates.                                               |
+| Enable Thinking | boolean | false   | Toggle chain-of-thought reasoning mode. Set temperature=1.0 when enabled.                |
+
+## Key Features
+
+- **72.4% SWE-bench Verified**: Matches GPT-5 mini on software engineering benchmarks at just 27B parameters.
+- **Dense Architecture**: No MoE routing overhead — simpler deployment and more predictable per-token compute.
+- **Native Multimodal**: Text, image, and video via early fusion — no separate vision encoder.
+- **1M Token Context**: 256K natively, extensible to 1M tokens for long-horizon document processing.
+- **Consumer Hardware Friendly**: Runs on a 22GB Mac M-series or equivalent consumer GPU.
+- **Fine-tuning Ready**: Dense architecture makes it straightforward to fine-tune for specialized domains.
+- **Apache 2.0 License**: Fully open source with full commercial freedom.
+
+---
+
+## Summary
+
+**Qwen3.5-27B** is the dense flagship of the Qwen3.5 Medium Series, optimized for coding, reasoning, and local deployment.
+- It uses a dense Transformer with Gated DeltaNet hybrid attention and an early fusion multimodal vision encoder.
+- It matches GPT-5 mini on SWE-bench Verified at 27B parameters, making it highly efficient for its capability tier.
+- The model supports 256K native context (up to 1M), optional thinking mode, and 201 languages.
+- Licensed under Apache 2.0 for full commercial use, deployable on 22GB consumer hardware.

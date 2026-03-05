@@ -1,0 +1,267 @@
+---
+title: "Qwen3.5 Flash"
+description: "> The production-hosted, closed source API version of Qwen3.5-35B-A3B — frontier-adjacent intelligence at 1/13th the cost of Claude Sonnet 4.6, with a 1M token context window, native tool calling, and 6x faster responses."
+---
+
+## About the Provider
+Alibaba Cloud is the cloud computing arm of Alibaba Group and the creator of the Qwen model family. Qwen3.5-Flash is served via Alibaba Cloud Model Studio as a closed-source, production-optimized API — delivering the capability of the Qwen3.5-35B-A3B architecture at high throughput and minimal cost, without requiring self-hosted infrastructure.
+
+## Model Quickstart
+
+This section helps you quickly get started with the `Qwen/Qwen3.5-Flash` model on the Qubrid AI inferencing platform.
+
+To use this model, you need:
+
+- A valid **Qubrid API key**
+- Access to the Qubrid inference API
+- Basic knowledge of making API requests in your preferred language
+
+Once authenticated with your API key, you can send inference requests to the `Qwen/Qwen3.5-Flash` model and receive responses based on your input prompts.
+
+Below are example placeholders showing how the model can be accessed using different programming environments.  
+You can choose the one that best fits your workflow.
+
+<CodeGroup>
+```py Python theme={null}
+from openai import OpenAI
+
+# Initialize the OpenAI client with Qubrid base URL
+client = OpenAI(
+    base_url="https://platform.qubrid.com/v1",
+    api_key="QUBRID_API_KEY",
+)
+
+# Create a streaming chat completion
+stream = client.chat.completions.create(
+    model="Qwen/Qwen3.5-Flash",
+    messages=[
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image? Describe the main elements."
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    max_tokens=8192,
+    temperature=0.6,
+    top_p=0.95,
+    stream=True
+)
+
+# If stream = False comment this out
+for chunk in stream:
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print("\n")
+
+# If stream = True comment this out
+print(stream.choices[0].message.content)
+```
+```js JavaScript theme={null}
+import OpenAI from 'openai';
+
+// Initialize the OpenAI client with Qubrid base URL
+const client = new OpenAI({
+  baseURL: 'https://platform.qubrid.com/v1',
+  apiKey: 'QUBRID_API_KEY',
+});
+
+// Create a streaming chat completion
+const stream = await client.chat.completions.create({
+  model: 'Qwen/Qwen3.5-Flash',
+  messages: [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  max_tokens: 8192,
+  temperature: 0.6,
+  top_p: 0.95,
+  stream: true
+});
+
+// If stream = false comment this out
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+console.log('\n');
+
+// If stream = true comment this out
+console.log(stream.choices[0].message.content);
+```
+```go Go theme={null}
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	url := "https://platform.qubrid.com/v1/chat/completions"
+
+	data := map[string]interface{}{
+		"model": "Qwen/Qwen3.5-Flash",
+		"messages": []map[string]interface{}{
+			{
+				"role": "user",
+				"content": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": "What is in this image? Describe the main elements.",
+					},
+					{
+						"type": "image_url",
+						"image_url": map[string]string{
+							"url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg",
+						},
+					},
+				},
+			},
+		},
+		"max_tokens":      8192,
+		"temperature":     0.6,
+		"stream":          true,
+		"top_p":           0.95,
+		"enable_thinking": false,
+	}
+
+	jsonData, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, _ := client.Do(req)
+	defer res.Body.Close()
+
+	scanner := bufio.NewScanner(res.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != "" {
+			fmt.Println(line)
+		}
+	}
+}
+```
+```curl cURL theme={null}
+curl -X POST "https://platform.qubrid.com/v1/chat/completions" \
+  -H "Authorization: Bearer QUBRID_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+  "model": "Qwen/Qwen3.5-Flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What is in this image? Describe the main elements."
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 8192,
+  "temperature": 0.6,
+  "stream": true,
+  "top_p": 0.95,
+  "enable_thinking": false
+}'
+```
+</CodeGroup>
+
+## Model Overview
+
+**Qwen3.5-Flash** is the production-hosted, closed-source API version of the Qwen3.5-35B-A3B model, served via Alibaba Cloud Model Studio.
+- It delivers frontier-adjacent intelligence at roughly 1/13th the cost of Claude Sonnet 4.6 ($0.10/M input tokens), with responses 6x faster and competitive quality on agentic benchmarks.
+- It features a 1M token context window, native tool calling, built-in web search, and code interpreter support — available exclusively via the hosted API.
+
+---
+
+## Model at a Glance
+
+| Feature        | Details                                                                                      |
+|----------------|----------------------------------------------------------------------------------------------|
+| Model ID       | `Qwen/Qwen3.5-Flash`                                                                         |
+| Provider       | Alibaba Cloud (Model Studio — hosted API)                                                    |
+| Architecture   | Hybrid Gated DeltaNet + Sparse MoE (hosted / proprietary serving infrastructure)             |
+| Model Size     | 35B Total / 3B Active — hosted                                                               |
+| Context Length | 1M Tokens (API) / 256K Tokens (self-hosted base)                                             |
+| Release Date   | February 2026                                                                                |
+| License        | Proprietary — Alibaba Cloud Model Studio API only                                            |
+| Training Data  | Large-scale multilingual multimodal dataset — weights not disclosed                          |
+
+## When to use?
+
+You should consider using **Qwen3.5-Flash** if:
+
+- You need high-volume agentic workflows with minimal cost
+- Your application requires cost-efficient RAG pipelines without chunking limitations
+- You are building real-time chatbots or assistants requiring fast response times
+- Your use case involves code generation, review, or tool-calling automation
+- You need large-document analysis with a 1M token context window
+- You want built-in web search and code interpreter without additional integration
+
+---
+
+## Inference Parameters
+
+| Parameter Name  | Type    | Default | Description                                                                              |
+|-----------------|---------|---------|------------------------------------------------------------------------------------------|
+| Streaming       | boolean | true    | Enable streaming responses for real-time output.                                         |
+| Temperature     | number  | 0.6     | Controls randomness. Use 0.6 for non-thinking tasks, 1.0 for thinking/reasoning tasks.  |
+| Max Tokens      | number  | 8192    | Maximum number of tokens the model can generate.                                         |
+| Top P           | number  | 0.95    | Controls nucleus sampling for more predictable output.                                   |
+| Top K           | number  | 20      | Limits token sampling to top-k candidates.                                               |
+| Enable Thinking | boolean | false   | Toggle chain-of-thought reasoning mode. Use temperature=1.0 when thinking is enabled.   |
+
+## Key Features
+
+- **1M Token Context Window**: Eliminates the need for RAG chunking on large documents — available on the hosted API.
+- **1/13th the Cost of Claude Sonnet 4.6**: At $0.10/M input tokens, enables high-volume production workloads at minimal cost.
+- **6x Faster than Claude Sonnet 4.6**: Production-optimized serving infrastructure for real-time agentic applications.
+- **Built-in Official Tools**: Native web search and code interpreter support — no additional integration required.
+- **Thinking and Non-Thinking Modes**: Configurable chain-of-thought reasoning for tasks requiring deep problem solving.
+- **Native Function Calling**: Structured output and tool-calling support for complex agentic workflows.
+
+---
+
+## Summary
+
+**Qwen3.5-Flash** is the production-hosted API deployment of Qwen3.5-35B-A3B, optimized for speed, scale, and cost efficiency.
+- It is served via Alibaba Cloud Model Studio as a closed-source API with proprietary serving infrastructure.
+- It delivers 1M token context, 6x faster responses, and 1/13th the cost of Claude Sonnet 4.6, with built-in web search and code interpreter.
+- The model supports Thinking and non-Thinking modes, native function calling, and structured output.
+- Available exclusively via the hosted API — no weight access or self-hosting supported.
