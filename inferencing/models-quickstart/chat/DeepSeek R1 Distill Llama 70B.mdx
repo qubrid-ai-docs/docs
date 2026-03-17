@@ -126,7 +126,7 @@ func main() {
 
     jsonData, _ := json.Marshal(data)
     req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-    req.Header.Set("Authorization", "Bearer k_07aeb84f069b.8Mgos0TPRORYLj_nELvrjM0Jkq0PT53Osc4H8OTZdw4b7osIwYNeqw")
+    req.Header.Set("Authorization", "Bearer QUBRID_API_KEY")
     req.Header.Set("Content-Type", "application/json")
 
     client := &http.Client{}
