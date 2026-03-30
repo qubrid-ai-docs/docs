@@ -1,0 +1,227 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid Voice API",
+    "version": "1.0.0",
+    "description": "Generate speech audio from text using text-to-speech (TTS) models."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "VoiceGenerationRequest": {
+        "type": "object",
+        "required": ["model", "text"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "qwen3-tts-flash",
+            "description": "The TTS model to use."
+          },
+          "text": {
+            "type": "string",
+            "example": "Today is a wonderful day to build something people love!",
+            "description": "Text input to convert into speech."
+          },
+          "voice": {
+            "type": "string",
+            "example": "Cherry",
+            "description": "Voice preset to use for speech synthesis."
+          },
+          "language_type": {
+            "type": "string",
+            "example": "Auto",
+            "description": "Language setting for speech generation."
+          }
+        }
+      },
+      "VoiceGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "example": 1710000000,
+            "description": "Unix timestamp when audio was generated."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "example": "https://cdn.qubrid.com/generated/audio.mp3",
+                  "description": "URL of the generated audio file."
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'text' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/audio/generations": {
+      "post": {
+        "summary": "Generate Speech (TTS)",
+        "description": "Convert text into natural-sounding speech using text-to-speech models.",
+        "operationId": "createVoice",
+        "tags": ["Voice"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceGenerationRequest"
+              },
+              "examples": {
+                "Basic TTS": {
+                  "summary": "Convert text to speech",
+                  "value": {
+                    "model": "qwen3-tts-flash",
+                    "text": "Today is a wonderful day to build something people love!",
+                    "voice": "Cherry",
+                    "language_type": "Auto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Audio generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceGenerationResponse"
+                },
+                "example": {
+                  "created": 1710000000,
+                  "data": [
+                    {
+                      "url": "https://cdn.qubrid.com/generated/audio.mp3"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

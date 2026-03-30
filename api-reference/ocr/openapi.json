@@ -1,0 +1,351 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid OCR API",
+    "version": "1.0.0",
+    "description": "Extract and recognize text from images using OCR-specialized vision models through the OpenAI-compatible chat completions API."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "OCRRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "Hunyuan/Hunyuan-OCR-1B",
+            "description": "The OCR-specialized vision model to use for text extraction."
+          },
+          "messages": {
+            "type": "array",
+            "description": "Chat-style input containing text instructions and image content for OCR processing.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "example": "user"
+                },
+                "content": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "example": "text"
+                      },
+                      "text": {
+                        "type": "string",
+                        "example": "Extract all text from this image and preserve the layout structure."
+                      },
+                      "image_url": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string",
+                            "example": "https://example.com/document.png",
+                            "description": "Publicly accessible image URL containing text to extract."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "default": 8192,
+            "description": "Maximum number of tokens to generate in the OCR response."
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.1,
+            "description": "Sampling temperature for text extraction (lower = more deterministic)."
+          },
+          "top_p": {
+            "type": "number",
+            "default": 1,
+            "description": "Nucleus sampling parameter for OCR output."
+          },
+          "stream": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to stream OCR output incrementally."
+          }
+        }
+      },
+      "OCRResponse": {
+        "type": "object",
+        "description": "Standard OpenAI-compatible chat completion response with extracted text.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "chatcmpl-ocr-123456"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer",
+            "example": 1710000000
+          },
+          "model": {
+            "type": "string",
+            "example": "Hunyuan/Hunyuan-OCR-1B"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "example": 0
+                },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "example": "assistant"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "Header: Important Document\n\nSection 1: Introduction\nThis document contains important information...\n\nSection 2: Details\nKey points and data extracted from the image..."
+                    }
+                  }
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "example": "stop"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'messages' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/chat/completions": {
+      "post": {
+        "summary": "Extract Text from Images with OCR",
+        "description": "Use specialized OCR vision models to extract and recognize text from images via the OpenAI-compatible chat completions API.",
+        "operationId": "createOCRCompletion",
+        "tags": ["OCR"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OCRRequest"
+              },
+              "examples": {
+                "Basic OCR": {
+                  "summary": "Extract text from a document image",
+                  "value": {
+                    "model": "Hunyuan/Hunyuan-OCR-1B",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "Extract all text from this image and preserve the layout structure."
+                          },
+                          {
+                            "type": "image_url",
+                            "image_url": {
+                              "url": "https://example.com/document.png"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "max_tokens": 8192,
+                    "temperature": 0.1,
+                    "top_p": 1,
+                    "stream": false
+                  }
+                },
+                "OCR with Layout": {
+                  "summary": "Extract text preserving document layout and structure",
+                  "value": {
+                    "model": "Hunyuan/Hunyuan-OCR-1B",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "Extract all text from this document image while preserving the original layout, structure, and formatting."
+                          },
+                          {
+                            "type": "image_url",
+                            "image_url": {
+                              "url": "https://example.com/form.jpg"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "max_tokens": 8192,
+                    "temperature": 0.05,
+                    "stream": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OCR text extraction completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OCRResponse"
+                },
+                "example": {
+                  "id": "chatcmpl-ocr-123456",
+                  "object": "chat.completion",
+                  "created": 1710000000,
+                  "model": "Hunyuan/Hunyuan-OCR-1B",
+                  "choices": [
+                    {
+                      "index": 0,
+                      "message": {
+                        "role": "assistant",
+                        "content": "INVOICE #2024-001\nDate: March 30, 2024\n\nBilled To:\nJohn Smith\n123 Main Street\nNew York, NY 10001\n\nItems:\n1. Service A - $100.00\n2. Service B - $250.00\n\nTotal: $350.00"
+                      },
+                      "finish_reason": "stop"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

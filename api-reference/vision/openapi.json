@@ -1,0 +1,325 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid Vision API",
+    "version": "1.0.0",
+    "description": "Analyze and understand images using multimodal vision-language models through the OpenAI-compatible chat completions API."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "VisionRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "Qwen/Qwen3-VL-Plus",
+            "description": "The multimodal vision-language model to use."
+          },
+          "messages": {
+            "type": "array",
+            "description": "Chat-style input containing text instructions and image content.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "example": "user"
+                },
+                "content": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "example": "text"
+                      },
+                      "text": {
+                        "type": "string",
+                        "example": "What is in this image? Describe the main elements."
+                      },
+                      "image_url": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string",
+                            "example": "https://example.com/sample-image.jpg",
+                            "description": "Publicly accessible image URL for visual analysis."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "default": 16384,
+            "description": "Maximum number of tokens to generate in the response."
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.1,
+            "description": "Sampling temperature controlling response variability."
+          },
+          "top_p": {
+            "type": "number",
+            "default": 1,
+            "description": "Nucleus sampling parameter."
+          },
+          "stream": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to stream output incrementally."
+          }
+        }
+      },
+      "VisionResponse": {
+        "type": "object",
+        "description": "Standard OpenAI-compatible chat completion response or streamed chunks.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "chatcmpl-abc123"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer",
+            "example": 1710000000
+          },
+          "model": {
+            "type": "string",
+            "example": "Qwen/Qwen3-VL-Plus"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "example": 0
+                },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "example": "assistant"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "The image shows the Statue of Liberty standing on Liberty Island in New York Harbor."
+                    }
+                  }
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "example": "stop"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'messages' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/chat/completions": {
+      "post": {
+        "summary": "Analyze Images with Vision Models",
+        "description": "Use a multimodal vision-language model to understand and describe images via the OpenAI-compatible chat completions API.",
+        "operationId": "createVisionCompletion",
+        "tags": ["Vision"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisionRequest"
+              },
+              "examples": {
+                "Basic Vision": {
+                  "summary": "Analyze an image with a text prompt",
+                  "value": {
+                    "model": "Qwen/Qwen3-VL-Plus",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "What is in this image? Describe the main elements."
+                          },
+                          {
+                            "type": "image_url",
+                            "image_url": {
+                              "url": "https://cdn.britannica.com/61/93061-050-99147DCE/Statue-of-Liberty-Island-New-York-Bay.jpg"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "max_tokens": 16384,
+                    "temperature": 0.1,
+                    "top_p": 1,
+                    "stream": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Vision analysis completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisionResponse"
+                },
+                "example": {
+                  "id": "chatcmpl-abc123",
+                  "object": "chat.completion",
+                  "created": 1710000000,
+                  "model": "Qwen/Qwen3-VL-Plus",
+                  "choices": [
+                    {
+                      "index": 0,
+                      "message": {
+                        "role": "assistant",
+                        "content": "The image shows the Statue of Liberty standing on Liberty Island in New York Harbor, with water and city skyline elements visible in the background."
+                      },
+                      "finish_reason": "stop"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

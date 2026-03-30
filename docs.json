@@ -224,6 +224,47 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Chat",
+            "pages": [
+              "api-reference/chat/create"
+            ]
+          },
+          {
+            "group": "Voice",
+            "pages": [
+              "api-reference/voice/create"
+            ]
+          },
+          {
+            "group": "Video",
+            "pages": [
+              "api-reference/video/create"
+            ]
+          },
+          {
+            "group": "Vision",
+            "pages": [
+              "api-reference/vision/create"
+            ]
+          },
+          {
+            "group": "OCR",
+            "pages": [
+              "api-reference/ocr/create"
+            ]
+          },
+          {
+            "group": "Image",
+            "pages": [
+              "api-reference/image/create"
+            ]
+          }
+        ]
       }
     ],
     "global": {

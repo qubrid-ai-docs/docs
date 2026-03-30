@@ -1,0 +1,333 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid Image API",
+    "version": "1.1.0",
+    "description": "Generate images from text prompts using advanced AI models with full parameter support."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "ImageGenerationRequest": {
+        "type": "object",
+        "required": ["model", "prompt"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "qwen-image",
+            "description": "The image generation model to use."
+          },
+          "prompt": {
+            "type": "string",
+            "example": "A futuristic city skyline at sunset",
+            "description": "The text prompt describing the image to generate."
+          },
+          "enhance_prompt": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to automatically enhance the prompt before generation."
+          },
+          "go_fast": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to prioritize faster generation."
+          },
+          "guidance": {
+            "type": "number",
+            "default": 3,
+            "description": "Guidance scale controlling prompt adherence."
+          },
+          "negative_prompt": {
+            "type": "string",
+            "default": "",
+            "description": "Elements you want to avoid in the generated image."
+          },
+          "num_inference_steps": {
+            "type": "integer",
+            "default": 30,
+            "description": "Number of denoising steps used during generation."
+          },
+          "seed": {
+            "type": "integer",
+            "nullable": true,
+            "default": null,
+            "description": "Optional random seed for reproducible results."
+          },
+          "disable_safety_checker": {
+            "type": "boolean",
+            "default": false,
+            "description": "Disable the safety checker for generation."
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "Optional input image for image-to-image generation or editing."
+          },
+          "strength": {
+            "type": "number",
+            "default": 0,
+            "description": "Strength of transformation when using an input image."
+          },
+          "lora_weights": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "description": "Optional LoRA weights identifier."
+          },
+          "lora_scale": {
+            "type": "number",
+            "default": 1,
+            "description": "Scale factor for the primary LoRA weights."
+          },
+          "extra_lora_weights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "Additional LoRA weights to apply."
+          },
+          "extra_lora_scale": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "default": [1, 1],
+            "description": "Scale values for additional LoRA weights."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "example": "16:9",
+            "description": "Aspect ratio for the generated image."
+          },
+          "image_size": {
+            "type": "string",
+            "example": "optimize_for_quality",
+            "description": "Controls image resolution or optimization mode."
+          },
+          "output_format": {
+            "type": "string",
+            "example": "webp",
+            "description": "Desired output image format."
+          },
+          "output_quality": {
+            "type": "integer",
+            "default": 80,
+            "description": "Compression quality for the output image."
+          }
+        }
+      },
+      "ImageGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "example": 1710000000,
+            "description": "Unix timestamp when the image was generated."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "example": "https://cdn.qubrid.com/generated/image.webp",
+                  "description": "URL of the generated image."
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'prompt' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/images/generations": {
+      "post": {
+        "summary": "Create Image",
+        "description": "Generate an image with minimal or advanced parameters.",
+        "operationId": "createImage",
+        "tags": ["Images"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "Minimal": {
+                  "summary": "Minimal request",
+                  "value": {
+                    "model": "qwen-image",
+                    "prompt": "A futuristic city skyline at sunset"
+                  }
+                },
+                "Full": {
+                  "summary": "Full request with all parameters",
+                  "value": {
+                    "model": "qwen-image",
+                    "prompt": "A cyberpunk city street with neon reflections, flying cars overhead",
+                    "enhance_prompt": false,
+                    "go_fast": true,
+                    "guidance": 3,
+                    "negative_prompt": "",
+                    "num_inference_steps": 30,
+                    "seed": null,
+                    "disable_safety_checker": false,
+                    "image": null,
+                    "strength": 0,
+                    "lora_weights": null,
+                    "lora_scale": 1,
+                    "extra_lora_weights": [],
+                    "extra_lora_scale": [1, 1],
+                    "aspect_ratio": "16:9",
+                    "image_size": "optimize_for_quality",
+                    "output_format": "webp",
+                    "output_quality": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageGenerationResponse"
+                },
+                "example": {
+                  "created": 1710000000,
+                  "data": [
+                    {
+                      "url": "https://cdn.qubrid.com/generated/image.webp"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
