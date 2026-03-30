@@ -1,0 +1,293 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid Chat API",
+    "version": "1.0.0",
+    "description": "Generate text responses using large language models via the OpenAI-compatible chat completions API."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "ChatRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "openai/gpt-oss-120b",
+            "description": "The language model to use."
+          },
+          "messages": {
+            "type": "array",
+            "description": "Conversation messages in chat format.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "example": "user",
+                  "description": "Role of the message sender (system, user, assistant)."
+                },
+                "content": {
+                  "type": "string",
+                  "example": "Summarize this support ticket into bullet-point next steps for the agent."
+                }
+              }
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "default": 4096,
+            "description": "Maximum number of tokens to generate."
+          },
+          "temperature": {
+            "type": "number",
+            "default": 0.7,
+            "description": "Controls randomness in output."
+          },
+          "top_p": {
+            "type": "number",
+            "default": 1,
+            "description": "Nucleus sampling parameter."
+          },
+          "stream": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to stream responses incrementally."
+          }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "description": "Standard OpenAI-compatible chat completion response or streamed chunks.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "chatcmpl-abc123"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer",
+            "example": 1710000000
+          },
+          "model": {
+            "type": "string",
+            "example": "openai/gpt-oss-120b"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "example": 0
+                },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "example": "assistant"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "- Identify customer issue\n- Provide resolution steps\n- Follow up with confirmation"
+                    }
+                  }
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "example": "stop"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'messages' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/chat/completions": {
+      "post": {
+        "summary": "Create Chat Completion",
+        "description": "Generate text responses using a large language model.",
+        "operationId": "createChatCompletion",
+        "tags": ["Chat"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              },
+              "examples": {
+                "Basic Chat": {
+                  "summary": "Generate a response from a prompt",
+                  "value": {
+                    "model": "openai/gpt-oss-120b",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Summarize this support ticket into bullet-point next steps for the agent."
+                      }
+                    ],
+                    "max_tokens": 4096,
+                    "temperature": 0.7,
+                    "top_p": 1,
+                    "stream": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chat completion generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                },
+                "example": {
+                  "id": "chatcmpl-abc123",
+                  "object": "chat.completion",
+                  "created": 1710000000,
+                  "model": "openai/gpt-oss-120b",
+                  "choices": [
+                    {
+                      "index": 0,
+                      "message": {
+                        "role": "assistant",
+                        "content": "- Identify issue\n- Provide solution\n- Confirm resolution with user"
+                      },
+                      "finish_reason": "stop"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

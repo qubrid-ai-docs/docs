@@ -1,0 +1,396 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qubrid Video API",
+    "version": "1.0.0",
+    "description": "Generate videos from text prompts with optional image and audio inputs using advanced AI models."
+  },
+  "servers": [
+    {
+      "url": "https://platform.qubrid.com/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API Key"
+      }
+    },
+    "schemas": {
+      "VideoGenerationRequest": {
+        "type": "object",
+        "required": ["model"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "p-video",
+            "description": "The video generation model to use."
+          },
+          "prompt": {
+            "type": "string",
+            "example": "A butterfly flying through a flower garden",
+            "description": "Optional text prompt describing the video to generate."
+          },
+          "duration": {
+            "type": "integer",
+            "example": 5,
+            "description": "Duration of the generated video in seconds."
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p",
+            "description": "Output video resolution."
+          },
+          "fps": {
+            "type": "integer",
+            "example": 24,
+            "description": "Frames per second for the generated video."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "example": "16:9",
+            "description": "Aspect ratio of the output video."
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "example": "https://example.com/input-image.jpg",
+            "description": "Optional input image URL to guide or initialize video generation."
+          },
+          "audio": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "example": "https://example.com/audio.mp3",
+            "description": "Optional input audio URL to include in the generated video."
+          },
+          "draft": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether to generate a draft/preview version of the video."
+          },
+          "save_audio": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to retain the provided audio in the final generated video."
+          },
+          "prompt_upsampling": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether to automatically enhance or expand the prompt before generation."
+          }
+        }
+      },
+      "VideoGenerationMultipartRequest": {
+        "type": "object",
+        "required": ["model"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "p-video",
+            "description": "The video generation model to use."
+          },
+          "prompt": {
+            "type": "string",
+            "example": "A butterfly flying through a flower garden",
+            "description": "Optional text prompt describing the video to generate."
+          },
+          "duration": {
+            "type": "string",
+            "example": "5",
+            "description": "Duration of the generated video in seconds."
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p",
+            "description": "Output video resolution."
+          },
+          "fps": {
+            "type": "string",
+            "example": "24",
+            "description": "Frames per second for the generated video."
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "example": "16:9",
+            "description": "Aspect ratio of the output video."
+          },
+          "image": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "example": "https://example.com/input-image.jpg",
+            "description": "Optional image URL input when sending multipart form data."
+          },
+          "audio": {
+            "type": "string",
+            "nullable": true,
+            "default": null,
+            "example": "https://example.com/audio.mp3",
+            "description": "Optional audio URL input when sending multipart form data."
+          },
+          "image_file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Optional image file upload."
+          },
+          "audio_file": {
+            "type": "string",
+            "format": "binary",
+            "description": "Optional audio file upload."
+          },
+          "draft": {
+            "type": "string",
+            "example": "false",
+            "description": "Whether to generate a draft/preview version of the video."
+          },
+          "save_audio": {
+            "type": "string",
+            "example": "true",
+            "description": "Whether to retain the provided audio in the final generated video."
+          },
+          "prompt_upsampling": {
+            "type": "string",
+            "example": "true",
+            "description": "Whether to automatically enhance or expand the prompt before generation."
+          }
+        }
+      },
+      "VideoGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer",
+            "example": 1710000000,
+            "description": "Unix timestamp when the video generation request was created."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "example": "https://cdn.qubrid.com/generated/video.mp4",
+                  "description": "URL of the generated video."
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request parameters"
+          },
+          "message": {
+            "type": "string",
+            "example": "The 'model' field is required."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/videos/generations": {
+      "post": {
+        "summary": "Create Video",
+        "description": "Generate a video using text, optional image input, optional audio input, or uploaded files.",
+        "operationId": "createVideo",
+        "tags": ["Videos"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "Text Only": {
+                  "summary": "Generate a video from text only",
+                  "value": {
+                    "model": "p-video",
+                    "prompt": "A butterfly flying through a flower garden",
+                    "duration": 5,
+                    "resolution": "720p",
+                    "fps": 24,
+                    "aspect_ratio": "16:9",
+                    "draft": false,
+                    "save_audio": true,
+                    "prompt_upsampling": true
+                  }
+                },
+                "Image + Audio URLs": {
+                  "summary": "Generate a video using image and audio URLs",
+                  "value": {
+                    "model": "p-video",
+                    "prompt": "A butterfly flying through a flower garden",
+                    "duration": 5,
+                    "resolution": "720p",
+                    "fps": 24,
+                    "aspect_ratio": "16:9",
+                    "image": "https://example.com/input-image.jpg",
+                    "audio": "https://example.com/audio.mp3",
+                    "draft": false,
+                    "save_audio": true,
+                    "prompt_upsampling": true
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationMultipartRequest"
+              },
+              "examples": {
+                "File Upload": {
+                  "summary": "Generate a video using uploaded image/audio files",
+                  "value": {
+                    "model": "p-video",
+                    "prompt": "A butterfly flying through a flower garden",
+                    "duration": "5",
+                    "resolution": "720p",
+                    "fps": "24",
+                    "draft": "false",
+                    "save_audio": "true",
+                    "prompt_upsampling": "true"
+                  }
+                },
+                "Multipart with URLs": {
+                  "summary": "Use image/audio URLs via multipart form",
+                  "value": {
+                    "model": "p-video",
+                    "prompt": "A butterfly flying through a flower garden",
+                    "image": "https://example.com/input-image.jpg",
+                    "audio": "https://example.com/audio.mp3",
+                    "resolution": "720p",
+                    "fps": "24",
+                    "draft": "false",
+                    "save_audio": "true",
+                    "prompt_upsampling": "true"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoGenerationResponse"
+                },
+                "example": {
+                  "created": 1710000000,
+                  "data": [
+                    {
+                      "url": "https://cdn.qubrid.com/generated/video.mp4"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Endpoint not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
